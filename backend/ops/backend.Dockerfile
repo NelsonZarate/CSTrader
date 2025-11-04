@@ -3,7 +3,7 @@ FROM python:3.11-slim as builder
 
 # Define o diretório de trabalho
 WORKDIR /app
-
+ENV PYTHONPATH=/app:$PYTHONPATH
 # Instala ferramentas essenciais (incluindo dependências do psycopg2)
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -44,4 +44,4 @@ EXPOSE 8000
 # Comando de Iniciação do Uvicorn (Corrigido e simplificado para o Docker Compose)
 # O Docker Compose fornecerá o comando para o container 'api'
 # Se for usar apenas o Docker run, use:
-# CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["poetry", "run", "uvicorn", "backend.src.main:app", "--host", "0.0.0.0", "--port", "8000"]
