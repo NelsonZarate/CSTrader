@@ -34,7 +34,7 @@ services:
     restart: always
     volumes:
       - data:/var/lib/postgresql/data
-      #- ./ops/initbd.d:/docker-entrypoint-initdb.d
+      - ./backend/ops/initbd.d:/docker-entrypoint-initdb.d
     environment:
       POSTGRES_PASSWORD: password
       POSTGRES_USER: user
