@@ -34,11 +34,12 @@ services:
     restart: always
     volumes:
       - data:/var/lib/postgresql/data
-      - ./backend/ops/initdb.d:/docker-entrypoint-initdb.d
     environment:
       POSTGRES_PASSWORD: password
       POSTGRES_USER: user
       POSTGRES_DB: db
+    ports:
+      - "5432:5432"
     networks:
       - app-network
 
