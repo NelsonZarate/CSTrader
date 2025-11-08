@@ -1,7 +1,7 @@
 down: 
-	docker compose down --volumes
+	docker compose down -v --remove-orphans
 up: 
-	docker compose up --build --force-recreate
+	docker compose up --build --force-recreate --remove-orphans
 
 it:
 	docker compose run -it api bash
