@@ -11,7 +11,7 @@ class Database:
         try:
             with self.engine.begin() as connection:
                 query_result = connection.execute(
-                    text("INSERT INTO Users(name, email, password, role, funds) VALUES (:name, :email, :password, :role, :funds) RETURNING id ;"),
+                    text("INSERT INTO users(name, email, password, role, funds) VALUES (:name, :email, :password, :role, :funds) RETURNING id ;"),
                     parameters={"name": user.name, "email": user.email, "password": user.password, "role": user.role, "funds": user.funds}
                 )
                 user_id = query_result.scalar_one()
@@ -34,7 +34,7 @@ class Database:
     def get_user_by_email(self,email: str) -> User:
         with self.engine.begin() as connection:
             query_result = connection.execute(
-                text("SELECT id, name, email, password, role, funds FROM Users WHERE email = :email"),
+                text("SELECT id, name, email, password, role, funds FROM users WHERE email = :email"),
                 parameters={"email": email}
             )
             row = query_result.first()
@@ -44,7 +44,7 @@ class Database:
     def get_all_users(self) -> list:
         with self.engine.begin() as connection:
             query_result = connection.execute(
-                text("SELECT id, name, email, role, funds FROM Users")
+                text("SELECT id, name, email, role, funds FROM users")
             )
             users = []
             for row in query_result.fetchall():
