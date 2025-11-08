@@ -7,7 +7,7 @@ from backend.src.models import User, RegisterRequest
 from backend.src.utils.validation_utils import hash_password,verify_password
 from backend.src.utils.security import get_current_user
 from backend.src.utils.auth_utils import create_access_token
-from backend.src.database import Database
+from backend.src.database import DatabaseService as Database
 
 app = FastAPI()
 
@@ -15,7 +15,6 @@ app = FastAPI()
 async def lifespan(app: FastAPI):
     app.state.db = Database()
     yield
-    app.state.db.disconnect()
 app = FastAPI(lifespan=lifespan)
 
 
@@ -78,9 +77,6 @@ def login_user(email: str = Body(..., embed=True), password: str = Body(..., emb
     try:
         db_instance = request.app.state.db
         user = db_instance.get_user_by_email(email)
-        print("User fetched for login:", email)
-        print("Provided password:", verify_password(password,user.password))
-        print("database User fetched for login:", user)
         if  user and verify_password(password,user.password):
             token = create_access_token({"sub": user.email, "role": user.role})
             return {"message": "Login successful", "user_id": str(user.id), "access_token":token, "token_type":"bearer"}
