@@ -4,7 +4,9 @@ from contextlib import asynccontextmanager
 
 from fastapi.params import Depends
 from backend.src.models import User, RegisterRequest
-from backend.src.utils import hash_pasword,create_access_token , get_current_user
+from backend.src.utils.validation_utils import hash_password,verify_password
+from backend.src.utils.security import get_current_user
+from backend.src.utils.auth_utils import create_access_token
 from backend.src.database import Database
 
 app = FastAPI()
@@ -13,7 +15,7 @@ app = FastAPI()
 async def lifespan(app: FastAPI):
     app.state.db = Database()
     yield
-    app.state.db.close()
+    app.state.db.disconnect()
 app = FastAPI(lifespan=lifespan)
 
 
@@ -25,7 +27,7 @@ def register_user(
     #Validate if user with email already exists
     
     #hash password
-    password_hashed = hash_pasword(user_data.password)
+    password_hashed = hash_password(user_data.password)
     new_user = User(
         id=0,
         name=user_data.name,
@@ -76,7 +78,10 @@ def login_user(email: str = Body(..., embed=True), password: str = Body(..., emb
     try:
         db_instance = request.app.state.db
         user = db_instance.get_user_by_email(email)
-        if user and user.password == hash_pasword(password):
+        print("User fetched for login:", email)
+        print("Provided password:", verify_password(password,user.password))
+        print("database User fetched for login:", user)
+        if  user and verify_password(password,user.password):
             token = create_access_token({"sub": user.email, "role": user.role})
             return {"message": "Login successful", "user_id": str(user.id), "access_token":token, "token_type":"bearer"}
         else:

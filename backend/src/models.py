@@ -49,7 +49,7 @@ class RegisterRequest(BaseModel):
             "example": {
                 "name": "John Doe",
                 "email": "john@example.com",
-                "password": "SecurePassoword123#",
+                "password": "SecurePassword123#",
                 "role":"player",
                 "funds": 00.0
             }
