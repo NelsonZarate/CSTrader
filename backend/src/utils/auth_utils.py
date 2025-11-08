@@ -1,5 +1,5 @@
 import jwt,os
-from datetime import datetime, timedelta
+import datetime
 from fastapi import HTTPException, status
 from dotenv import load_dotenv
 load_dotenv()
@@ -9,7 +9,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 120))
 
 def create_access_token(data: dict):
     to_encode = data.copy()
-    expires_at = datetime.now(datetime.timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expires_at})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
