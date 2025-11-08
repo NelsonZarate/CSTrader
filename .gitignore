@@ -8,3 +8,5 @@ node_modules/
 dist/
 build/
 *.log
+backend/src/__pycache__/
+backend/src/utils/__pycache__/
