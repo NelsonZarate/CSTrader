@@ -12,29 +12,7 @@
 <body>
 
     <header>
-        <nav class="navbar">
-            <a href="index.html" class="logo-link">
-                <img src="https://i.postimg.cc/K8D91Q8Y/Chat-GPT-Image-5-11-2025-00-32-44-Photoroom.png"
-                    class="Logo-nav" alt="Logo">
-            </a>
-
-            <a href="#">Market</a>
-            <a href="#">Inventory</a>
-            <a href="#FAQ">FAQ</a>
-
-            <div class="right-navbar">
-                <div class="logged-out">
-                    <a href="./Sign_In.html" class="signin-button">Sign In</a>
-                    <a href="./Sign_Up.html" class="signup-button">Sign Up</a>
-                </div>
-
-                <div class="logged-in">
-                    <span class="user-name"></span>
-                    <a href="#" class="logout-button">Logout</a>
-                </div>
-            </div>
-        </nav>
-
+        <div id="navbar"></div>
     </header>
 
     <main>
@@ -111,6 +89,7 @@
 
         <section class="skins-section">
             <div class="carousel">
+                <!-- Skin carousel kept unchanged -->
                 <div class="carousel-item">
                     <img src="https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1I5PeibbBiLs-SA1iSze91u_FsTju_qhAmoT-Jn4bjJC_4Ml93UtZuR7JYtEO-mtzjN-_gs1DXjN9MyHr92n4d7S89sL4AWaR2_vbSigzFZKp9v8c7W1qI3g"
                         alt="Skin 1">
@@ -242,7 +221,9 @@
 
     </main>
 
+    <script type="module" src="scripts/main.js"></script>
     <script type="module" src="scripts/landing_page.js"></script>
+
 </body>
 
 </html>

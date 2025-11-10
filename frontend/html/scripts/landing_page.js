@@ -1,11 +1,3 @@
-/*
-import { initAuth } from "./auth.js";
-
-document.addEventListener("DOMContentLoaded", async () => {
-  await initAuth();
-});
-*/
-
 // === Primeiro carrossel (HERO) ===
 const slides = document.querySelectorAll(".hero-content");
 let current = 0;
@@ -38,11 +30,6 @@ function animarPassos() {
 document.addEventListener('DOMContentLoaded', animarPassos);
 
 
-
-
-
-
-
 // === Segundo carrossel (SKINS) ===
 const skinItems = document.querySelectorAll(".carousel-item");
 let skinCurrent = 0;
@@ -73,16 +60,6 @@ function nextSkinSlide() {
 updateSkinCarousel();
 setInterval(nextSkinSlide, 3000);
 
-
-
-
-
-
-
-
-
-
-
 // === Seção FAQ ===
 document.querySelectorAll('.faq-question').forEach(button => {
     button.addEventListener('click', () => {
@@ -95,18 +72,4 @@ document.querySelectorAll('.faq-question').forEach(button => {
             item.classList.add('active');
         }
     });
-});
-
-
-
-
-// === Toggle Password Visibility ===    const togglePassword = document.querySelector('#togglePassword');
-const passwordInput = document.querySelector('#password');
-
-togglePassword.addEventListener('click', function () {
-    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-    passwordInput.setAttribute('type', type);
-
-    this.classList.toggle('fa-eye');
-    this.classList.toggle('fa-eye-slash');
 });
