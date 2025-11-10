@@ -55,6 +55,22 @@ services:
     depends_on:
       - database
 
+  initialize_admin:
+    volumes:
+      - .:/app
+    build:
+      context: .
+      dockerfile: ./backend/ops/backend.Dockerfile
+    command: sh -c "sleep 15 && poetry run python backend/src/initialize_admin.py"
+    depends_on:
+      - database
+      - api
+    networks:
+      - app-network
+    environment:
+      ADMIN_EMAIL: admin@cstrader.com
+      ADMIN_PASSWORD: SuperSecureAdmin123!
+      ADMIN_NAME: System Admin
 volumes:
   data:
 
