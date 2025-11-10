@@ -13,8 +13,8 @@ load_dotenv()
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
-from backend.src.settings import settings 
-from backend.src.db_models import Base 
+from src.settings import settings 
+from src.db_models import Base 
 
 
 # this is the Alembic Config object, which provides
@@ -50,6 +50,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
+    
     url = f"{settings.database_driver}://{settings.database_username}:{settings.database_password}@{settings.database_host}:{settings.database_port}/{settings.database_name}"    
     context.configure(
         url=url,

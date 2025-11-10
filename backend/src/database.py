@@ -1,5 +1,5 @@
 from backend.src.settings import settings
-from backend.src.models import User as PydanticUser 
+from backend.src.models import User 
 from backend.src.db_models import UserTable          
 from sqlalchemy import create_engine, select, insert
 from sqlalchemy.orm import sessionmaker, Session
@@ -19,35 +19,50 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 class DatabaseService:
     def __init__(self):
         pass
-    def create_user(self, user: PydanticUser) -> str:       
-        with SessionLocal() as session:
-            try:
-                db_user = UserTable(
-                    name=user.name,
-                    email=user.email,
-                    password=user.password,
-                    role=user.role,
-                    funds=user.funds
-                )
-                session.add(db_user)
-                session.commit()
-                session.refresh(db_user)
-                return str(db_user.id)
-            except IntegrityError as e:
-                session.rollback()
+    def create_user(self, user: User, db: Session) -> str:       
+        try:
+            db_user = UserTable(
+                name=user.name,
+                email=user.email,
+                password=user.password,
+                role=user.role,
+                funds=user.funds
+            )
+            db.add(db_user)
+            db.commit()
+            db.refresh(db_user)
+            return str(db_user.id)
+        except IntegrityError as e:
+                db.rollback()
                 raise ValueError("User with this email already exists") from e
-    def get_user_by_email(self,email: str) -> PydanticUser | None:
-        with SessionLocal() as session:
-            query = select(UserTable).where(UserTable.email == email)
-            result = session.execute(query).scalar_one_or_none()
-            if result:
-                return PydanticUser.model_validate(result)
-            return None
+    def create_admin(self, user: User, db: Session) -> str:       
+        try:
+            db_user = UserTable(
+                id=user.id,
+                name=user.name,
+                email=user.email,
+                password=user.password,
+                role=user.role,
+                funds=user.funds
+            )
+            db.add(db_user)
+            db.commit()
+            db.refresh(db_user)
+            return str(db_user.id)
+        except IntegrityError as e:
+                db.rollback()
+                raise ValueError("ADMIN with this id or email already exist") from e
+    
+    def get_user_by_email(self, email: str, db: Session) -> User | None:
+        query = select(UserTable).where(UserTable.email == email)
+        result = db.execute(query).scalar_one_or_none()
+        if result:
+            return User.model_validate(result)
+        return None
         
-    def get_all_users(self) -> List[Dict]:
-        with SessionLocal() as session:
-            stmt = select(UserTable)
-            db_users = session.scalars(stmt).all()
+    def get_all_users(self,db: Session) -> List[Dict]:
+            query = select(UserTable)
+            db_users = db.scalars(query).all()
             users_data = []
             for user in db_users:
                 users_data.append({
@@ -60,14 +75,13 @@ class DatabaseService:
             return users_data
 
 Database = DatabaseService
-# Se a sua aplicação fosse maior, usaríamos uma função auxiliar para sessões, 
-# mas manter a classe é mais simples para o seu código atual:
-# 
-# def get_db():
-#     db = SessionLocal()
-#     try:
-#         yield db
-#     finally:
-#         db.close()
+
+def get_db():
+     db = SessionLocal()
+     try:
+         yield db
+     finally:
+         db.close()
+         
 if __name__ == "__main__":
     breakpoint()
