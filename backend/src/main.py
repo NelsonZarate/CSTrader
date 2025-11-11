@@ -1,31 +1,39 @@
 from typing import Union,Dict
 from fastapi import FastAPI,Body, Request, status, HTTPException
 from contextlib import asynccontextmanager
-
+from sqlalchemy.orm import Session
 from fastapi.params import Depends
 from backend.src.models import User, RegisterRequest
-from backend.src.utils import hash_pasword,create_access_token , get_current_user
-from backend.src.database import Database
+from backend.src.utils.validation_utils import hash_password,verify_password
+from backend.src.utils.security import get_current_user
+from backend.src.utils.auth_utils import create_access_token
+from backend.src.database import DatabaseService, get_db
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+db_service = DatabaseService()
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    app.state.db = Database()
-    yield
-    app.state.db.close()
-app = FastAPI(lifespan=lifespan)
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000"
+]
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,            
+    allow_credentials=True,           
+    allow_methods=["*"],              
+    allow_headers=["*"],              
+)
 
 @app.post("/register_user", status_code=status.HTTP_201_CREATED, response_model=Dict[str, str])
 def register_user(
     user_data: RegisterRequest = Body(...,description="User registration data"),
-    request: Request = None
+    db: Session = Depends(get_db) 
     ) -> Dict[str, str]:
-    #Validate if user with email already exists
-    
+        
     #hash password
-    password_hashed = hash_pasword(user_data.password)
+    password_hashed = hash_password(user_data.password)
     new_user = User(
         id=0,
         name=user_data.name,
@@ -36,27 +44,24 @@ def register_user(
     )
     #Save user to database
     try:
-        db_instance = request.app.state.db
-        user_id = db_instance.create_user(new_user)
+        user_id = db_service.create_user(new_user,db)
         return {"message": "User registered successfully", "user_id": user_id}   
     except Exception as e:
         raise HTTPException(status_code=500,detail=f"Error creating user: {str(e)}") from e
 
 @app.get("/get_users", status_code=status.HTTP_200_OK, response_model=Dict[str, Union[str, list]])
-def get_users(request: Request = None) -> Dict[str, Union[str, list]]:
+def get_users(db: Session = Depends(get_db)) -> Dict[str, Union[str, list]]:
     try:
-        db_instance = request.app.state.db
-        users = db_instance.get_all_users()
+        users = db_service.get_all_users(db)
         return {"message": "Users retrieved successfully", "users": users}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving users: {str(e)}") from e
     
     
 @app.get("/get_user/{email}", status_code=status.HTTP_200_OK, response_model=Dict[str, Union[str, Dict]])
-def get_user(email: str, request: Request = None) -> Dict[str, Union[str, Dict]]:
+def get_user_by_email(self, email: str, db: Session = Depends(get_db)) -> User | None:
     try:
-        db_instance = request.app.state.db
-        user = db_instance.get_user_by_email(email)
+        user = db_service.get_user_by_email(email,db)
         if user:
             user_data = {
                 "id": user.id,
@@ -72,11 +77,10 @@ def get_user(email: str, request: Request = None) -> Dict[str, Union[str, Dict]]
         raise HTTPException(status_code=500, detail=f"Error retrieving user: {str(e)}") from e
 
 @app.post("/login",status_code=status.HTTP_200_OK)
-def login_user(email: str = Body(..., embed=True), password: str = Body(..., embed=True), request: Request = None) -> Dict[str, str]:
+def login_user(email: str = Body(..., embed=True), password: str = Body(..., embed=True), db: Session = Depends(get_db) ) -> Dict[str, str]:
     try:
-        db_instance = request.app.state.db
-        user = db_instance.get_user_by_email(email)
-        if user and user.password == hash_pasword(password):
+        user = db_service.get_user_by_email(email,db)
+        if  user and verify_password(password,user.password):
             token = create_access_token({"sub": user.email, "role": user.role})
             return {"message": "Login successful", "user_id": str(user.id), "access_token":token, "token_type":"bearer"}
         else:

@@ -2,7 +2,7 @@ from typing import Union,Dict
 from fastapi import FastAPI,Body, Request, status, HTTPException
 from models import User, RegisterRequest
 from src.utils.validation_utils import hash_pasword,validate_email_format,validate_password_strength
-from database import Database
+from backend.src.database import Database
 from contextlib import asynccontextmanager
 
 app = FastAPI()
