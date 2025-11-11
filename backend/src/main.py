@@ -92,3 +92,8 @@ def login_user(email: str = Body(..., embed=True), password: str = Body(..., emb
 @app.get("/users/me")
 def get_my_data(current_user: dict = Depends(get_current_user)):
     return {"message": f"Olá {current_user['sub']}!"}
+
+
+@app.get("/logout",status_code=status.HTTP_200_OK)
+def logout_user(current_user: dict = Depends(get_current_user)) -> Dict[str, str]:
+    return {"message": "Logout successful"}
