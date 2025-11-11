@@ -1,7 +1,6 @@
-import { loadNavbar } from "./navbar.js";
+import { loadNavbar, updateNavbarState } from "./navbar.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
-    await loadNavbar();
+  await loadNavbar();
+  updateNavbarState();
 });
-
-
