@@ -8,9 +8,24 @@ from backend.src.utils.validation_utils import hash_password,verify_password
 from backend.src.utils.security import get_current_user
 from backend.src.utils.auth_utils import create_access_token
 from backend.src.database import DatabaseService, get_db
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 db_service = DatabaseService()
+
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,            
+    allow_credentials=True,           
+    allow_methods=["*"],              
+    allow_headers=["*"],              
+)
+
 @app.post("/register_user", status_code=status.HTTP_201_CREATED, response_model=Dict[str, str])
 def register_user(
     user_data: RegisterRequest = Body(...,description="User registration data"),
