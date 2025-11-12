@@ -1,0 +1,60 @@
+import { getToken, logoutUser, getUserByEmail } from "./api.js";
+
+export async function loadNavbar() {
+  const navbarContainer = document.getElementById("navbar");
+  if (!navbarContainer) return;
+
+  const response = await fetch("../components/navbar.html");
+  const html = await response.text();
+  navbarContainer.innerHTML = html;
+}
+
+export async function updateNavbarState() {
+  const loggedOut = document.querySelector(".logged-out");
+  const loggedIn = document.querySelector(".logged-in");
+  const userNameEl = document.querySelector(".user-name");
+  const logoutBtn = document.querySelector(".logout-button");
+
+  const token = getToken();
+
+  if (token) {
+    if (loggedOut) loggedOut.style.display = "none";
+    if (loggedIn) loggedIn.style.display = "flex";
+
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      const email = payload.sub;
+
+      const user = await getUserByEmail(email);
+      userNameEl.textContent = user?.name || "User";
+
+
+      if (user?.role === 'admin') {
+        const adminSpan = document.createElement("span");
+        adminSpan.textContent = " (Admin)";
+        adminSpan.style.color = "#ff3da5"; 
+        adminSpan.style.cursor = "pointer";
+        userNameEl.appendChild(adminSpan);
+
+
+        adminSpan.onclick = () => {
+          window.location.replace("#"); // ver dps com o gonçalo!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        };
+      }
+
+    } catch (error) {
+      console.error("Erro ao carregar dados do utilizador:", error);
+      userNameEl.textContent = "User";
+    }
+
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", () => {
+        logoutUser();
+        window.location.replace("../login/index.html#login");
+      });
+    }
+  } else {
+    if (loggedOut) loggedOut.style.display = "flex";
+    if (loggedIn) loggedIn.style.display = "none";
+  }
+}

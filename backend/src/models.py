@@ -15,6 +15,7 @@ class User(BaseModel):
             raise ValueError('Username cannot be empty')
         return v.strip()
     model_config = ConfigDict(
+        from_attributes=True,
         json_schema_extra={
             "example": {
                 "name": "John Doe",
@@ -23,6 +24,7 @@ class User(BaseModel):
                 "role": "user",
                 "funds": 100.0
             }
+
         }
     )
     

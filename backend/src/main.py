@@ -59,9 +59,9 @@ def get_users(db: Session = Depends(get_db)) -> Dict[str, Union[str, list]]:
     
     
 @app.get("/get_user/{email}", status_code=status.HTTP_200_OK, response_model=Dict[str, Union[str, Dict]])
-def get_user_by_email(self, email: str, db: Session = Depends(get_db)) -> User | None:
+def get_user_by_email(email: str, db: Session = Depends(get_db)) -> Dict[str, Union[str, Dict]]:
     try:
-        user = db_service.get_user_by_email(email,db)
+        user = db_service.get_user_by_email(email, db)
         if user:
             user_data = {
                 "id": user.id,
@@ -75,6 +75,7 @@ def get_user_by_email(self, email: str, db: Session = Depends(get_db)) -> User |
             raise HTTPException(status_code=404, detail="User not found")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving user: {str(e)}") from e
+
 
 @app.post("/login",status_code=status.HTTP_200_OK)
 def login_user(email: str = Body(..., embed=True), password: str = Body(..., embed=True), db: Session = Depends(get_db) ) -> Dict[str, str]:
