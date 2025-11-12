@@ -3,9 +3,9 @@ from fastapi import FastAPI,Body, Request, status, HTTPException
 from contextlib import asynccontextmanager
 from sqlalchemy.orm import Session
 from fastapi.params import Depends
-from backend.src.models import User, RegisterRequest
+from backend.src.models import User, RegisterRequest, CreateSkinRequest
 from backend.src.utils.validation_utils import hash_password,verify_password
-from backend.src.utils.security import get_current_user
+from backend.src.utils.security import get_current_user, get_current_admin_user
 from backend.src.utils.auth_utils import create_access_token
 from backend.src.database import DatabaseService, get_db
 from fastapi.middleware.cors import CORSMiddleware
@@ -122,3 +122,15 @@ def get_user_skins_by_id(user_id: int, db: Session = Depends(get_db)) -> Dict[st
         return {"message": "User skins retrieved successfully", "skins": skins}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving user skins: {str(e)}") from e
+    
+@app.post("/admin/skins", status_code=status.HTTP_201_CREATED, response_model=Dict[str,Union[str, str]])
+def create_skin_admin(
+    skin_data: CreateSkinRequest = Body(..., description="Skin data to be created"),
+    current_admin: dict = Depends(get_current_admin_user),
+    db: Session = Depends(get_db)
+    ) -> Dict[str, Union[str, str]]:
+    try:
+        skin_id = db_service.create_skin(skin_data, db)
+        return {"message": "Skin created successfully", "skin_id": skin_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating skin: {str(e)}") from e
