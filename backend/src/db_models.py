@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime
+from sqlalchemy import Column, Integer, String, Float, DateTime,ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime,timezone
 
@@ -10,7 +10,7 @@ class UserTable(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
-    password = Column(String, nullable=False) # password_hash
+    password = Column(String, nullable=False)
     role = Column(String, default="player")
     funds = Column(Float, default=0.0)
     date_created = Column(DateTime, default=datetime.now(timezone.utc)) 
@@ -22,6 +22,6 @@ class SkinTable(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     type = Column(String, nullable=False)
-    float_value = Column(Float, nullable=False)
-    owner_id = Column(Integer, nullable=False)
+    float_value = Column(String, nullable=False)
+    owner_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     date_created = Column(DateTime, default=datetime.now(timezone.utc))

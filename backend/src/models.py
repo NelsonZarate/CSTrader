@@ -89,7 +89,7 @@ class LoginRequest(BaseModel):
 class CreateSkinRequest(BaseModel):
     name: str = Field(..., description="The name of the skin (e.g., AK-47 | Redline)")
     type: str = Field(..., description="The type of the weapon (e.g., Rifle, Pistol)")
-    float_value: float = Field(..., alias="float", description="The float value of the skin (0.00 to 1.00)")    
+    float_value: str = Field(..., alias="float", description="The float value of the skin (0.00 to 1.00)")    
     model_config = ConfigDict(
         from_attributes=True,
         populate_by_name=True, 
@@ -98,7 +98,7 @@ class CreateSkinRequest(BaseModel):
             "example": {
                 "name": "M4A4 | Asiimov",
                 "type": "Rifle",
-                "float": 0.35,
+                "float": "Factory new",
             }
         }
     )
