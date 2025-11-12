@@ -36,7 +36,8 @@ class skins(BaseModel):
     owner_id: int
     date_created: str
     model_config = ConfigDict(
-        populate_by_name=True, # Permite que o Pydantic leia 'float' do banco de dados como 'float_value'
+        populate_by_name=True,
+        from_attributes=True,
         json_schema_extra={
             "example": {
                 "id": 1,
@@ -81,6 +82,23 @@ class LoginRequest(BaseModel):
             "example": {
                 "email": "john@example.com",
                 "password": "SecurePassoword123#"
+            }
+        }
+    )
+    
+class CreateSkinRequest(BaseModel):
+    name: str = Field(..., description="The name of the skin (e.g., AK-47 | Redline)")
+    type: str = Field(..., description="The type of the weapon (e.g., Rifle, Pistol)")
+    float_value: float = Field(..., alias="float", description="The float value of the skin (0.00 to 1.00)")    
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True, 
+        by_alias=True,
+        json_schema_extra={
+            "example": {
+                "name": "M4A4 | Asiimov",
+                "type": "Rifle",
+                "float": 0.35,
             }
         }
     )
