@@ -95,6 +95,7 @@ def get_my_data(current_user: dict = Depends(get_current_user)):
     return {"message": f"Olá {current_user['sub']}!"}
 
 
+#endpoint de logout (simples, apenas para demonstração)
 @app.get("/logout",status_code=status.HTTP_200_OK)
 def logout_user(current_user: dict = Depends(get_current_user)) -> Dict[str, str]:
     return {"message": "Logout successful"}
