@@ -1,10 +1,11 @@
 from backend.src.settings import settings
-from backend.src.models import User 
+from backend.src.models import User, skins, CreateSkinRequest
 from backend.src.db_models import UserTable, SkinTable   
 from sqlalchemy import create_engine, select, insert,text
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.exc import IntegrityError
 from typing import List, Dict
+from datetime import datetime,timezone
 
 DATABASE_URL = (
     f"{settings.database_driver}://"
@@ -87,6 +88,24 @@ class DatabaseService:
                     "date_created": skin.date_created
                 })
             return skins_data
+    def create_skin(self, skin: CreateSkinRequest, db: Session) -> str:       
+        try:
+            db_skin = SkinTable(
+                name=skin.name,
+                type=skin.type,
+                float_value=skin.float_value,
+                owner_id=0,
+                date_created=datetime.now(timezone.utc)
+            )
+            db.add(db_skin)
+            db.commit()
+            db.refresh(db_skin)
+            return str(db_skin.id)
+        except IntegrityError as e:
+                db.rollback()
+                raise ValueError("Error creating skin") from e
+            
+            
 Database = DatabaseService
 
 def get_db():
