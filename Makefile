@@ -16,4 +16,4 @@ migrations:
 	docker exec -it cstrader-api-1 poetry run alembic -c backend/alembic.ini upgrade head
 
 create_admin:
-	docker compose up --build initialize_admin
+	docker compose up --build initialize_admin -d
