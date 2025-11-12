@@ -1,7 +1,7 @@
 from backend.src.settings import settings
 from backend.src.models import User 
-from backend.src.db_models import UserTable          
-from sqlalchemy import create_engine, select, insert
+from backend.src.db_models import UserTable, SkinTable   
+from sqlalchemy import create_engine, select, insert,text
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.exc import IntegrityError
 from typing import List, Dict
@@ -73,7 +73,20 @@ class DatabaseService:
                     "funds": user.funds
                 })
             return users_data
-
+    def get_user_skins(self,user_id:int,db: Session) -> List[Dict]:
+            query = select(SkinTable).where(SkinTable.owner_id == user_id)
+            db_skins = db.scalars(query).all()
+            skins_data = []
+            for skin in db_skins:
+                skins_data.append({
+                    "id": skin.id,
+                    "name": skin.name,
+                    "type": skin.type,
+                    "float_value": skin.float_value,
+                    "owner_id": skin.owner_id,
+                    "date_created": skin.date_created
+                })
+            return skins_data
 Database = DatabaseService
 
 def get_db():

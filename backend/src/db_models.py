@@ -15,3 +15,13 @@ class UserTable(Base):
     funds = Column(Float, default=0.0)
     date_created = Column(DateTime, default=datetime.utcnow) 
 
+
+class SkinTable(Base):
+    __tablename__ = "skins"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    type = Column(String, nullable=False)
+    float_value = Column(Float, nullable=False)
+    owner_id = Column(Integer, nullable=False)
+    date_created = Column(DateTime, default=datetime.utcnow)

@@ -83,7 +83,7 @@ def login_user(email: str = Body(..., embed=True), password: str = Body(..., emb
         user = db_service.get_user_by_email(email,db)
         if  user and verify_password(password,user.password):
             token = create_access_token({"sub": user.email, "role": user.role})
-            return {"message": "Login successful", "user_id": str(user.id), "access_token":token, "token_type":"bearer"}
+            return {"message": "Login successful", "user_id": str(user.id), "access_token":token, "token_type":"bearer", "role": user.role}
         else:
             raise HTTPException(status_code=401, detail="Invalid email or password")
     except Exception as e:
@@ -99,3 +99,26 @@ def get_my_data(current_user: dict = Depends(get_current_user)):
 @app.get("/logout",status_code=status.HTTP_200_OK)
 def logout_user(current_user: dict = Depends(get_current_user)) -> Dict[str, str]:
     return {"message": "Logout successful"}
+
+
+@app.get("/inventory", status_code=status.HTTP_200_OK, response_model=Dict[str, Union[str, list]])
+def get_my_skins(current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)) -> Dict[str, Union[str, list]]:
+    try:
+        user_email = current_user['sub']
+        user = db_service.get_user_by_email(user_email, db)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        skins = db_service.get_user_skins(user.id, db)
+        return {"message": "User skins retrieved successfully", "skins": skins}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving user skins: {str(e)}") from e
+    
+    
+@app.get("/user_skins/{user_id}", status_code=status.HTTP_200_OK, response_model=Dict[str, Union[str, list]])
+def get_user_skins_by_id(user_id: int, db: Session = Depends(get_db)) -> Dict[str, Union[str, list]]:
+    try:
+        skins = db_service.get_user_skins(user_id, db)
+        return {"message": "User skins retrieved successfully", "skins": skins}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving user skins: {str(e)}") from e
