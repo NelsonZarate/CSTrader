@@ -32,8 +32,22 @@ class skins(BaseModel):
     id: int
     name: str
     type: str
-    float: float
+    float_value: float
     owner_id: int
+    date_created: str
+    model_config = ConfigDict(
+        populate_by_name=True, # Permite que o Pydantic leia 'float' do banco de dados como 'float_value'
+        json_schema_extra={
+            "example": {
+                "id": 1,
+                "name": "AK-47 | Redline",
+                "type": "Rifle",
+                "float": 0.15,
+                "owner_id": 0
+            }
+        }
+    )
+
 
 class marketplace(BaseModel):
     id: int
