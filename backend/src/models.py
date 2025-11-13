@@ -1,4 +1,5 @@
 from pydantic import BaseModel,Field,EmailStr,field_validator,ConfigDict
+from typing import Optional
 
 class User(BaseModel):
     id: int 
@@ -87,18 +88,41 @@ class LoginRequest(BaseModel):
     )
     
 class CreateSkinRequest(BaseModel):
-    name: str = Field(..., description="The name of the skin (e.g., AK-47 | Redline)")
-    type: str = Field(..., description="The type of the weapon (e.g., Rifle, Pistol)")
-    float_value: str = Field(..., alias="float", description="The float value of the skin (0.00 to 1.00)")    
+    name: str = Field(..., description="The name of the skin example Dopler")
+    type: str = Field(..., description="The type of the knife example (Bayonet, Karambit)")
+    float_value: str = Field(..., alias="float", description="The float value of the skin Factory new, Minimal Wear, Field-Tested, Well-Worn, Battle-Scarred") 
+    link: str = Field(..., description="The link to the skin image ")   
     model_config = ConfigDict(
         from_attributes=True,
         populate_by_name=True, 
         by_alias=True,
         json_schema_extra={
             "example": {
-                "name": "M4A4 | Asiimov",
-                "type": "Rifle",
+                "name": "Dopler",
+                "type": "ButterFly",
                 "float": "Factory new",
+                "link":"https://example.com/skin_image.jpg"
+            }
+        }
+    )
+    
+class EditSkinRequest(BaseModel):
+    name: Optional[str] = Field(..., description="The name of the skin example Dopler")
+    type: Optional[str] = Field(..., description="The type of the knife example (Bayonet, Karambit)")
+    float_value: Optional[str] = Field(..., alias="float", description="The float value of the skin Factory new, Minimal Wear, Field-Tested, Well-Worn, Battle-Scarred")
+    owner_id: Optional[int] = Field(..., description="The ID of the owner user") 
+    link: Optional[str] = Field(..., description="The link to the skin image ")   
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True, 
+        by_alias=True,
+        json_schema_extra={
+            "example": {
+                "name": "Dopler",
+                "type": "ButterFly",
+                "float": "Factory new",
+                "owner_id": 1,
+                "link":"https://example.com/skin_image.jpg"
             }
         }
     )

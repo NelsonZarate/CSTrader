@@ -3,7 +3,7 @@ from fastapi import FastAPI,Body, Request, status, HTTPException
 from contextlib import asynccontextmanager
 from sqlalchemy.orm import Session
 from fastapi.params import Depends
-from backend.src.models import User, RegisterRequest, CreateSkinRequest
+from backend.src.models import User, RegisterRequest, CreateSkinRequest,EditSkinRequest
 from backend.src.utils.validation_utils import hash_password,verify_password
 from backend.src.utils.security import get_current_user, get_current_admin_user
 from backend.src.utils.auth_utils import create_access_token
@@ -115,7 +115,7 @@ def get_my_skins(current_user: dict = Depends(get_current_user), db: Session = D
         raise HTTPException(status_code=500, detail=f"Error retrieving user skins: {str(e)}") from e
     
     
-@app.get("/user_skins/{user_id}", status_code=status.HTTP_200_OK, response_model=Dict[str, Union[str, list]])
+@app.get("/user/skins/{user_id}", status_code=status.HTTP_200_OK, response_model=Dict[str, Union[str, list]])
 def get_user_skins_by_id(user_id: int, db: Session = Depends(get_db)) -> Dict[str, Union[str, list]]:
     try:
         skins = db_service.get_user_skins(user_id, db)
@@ -134,3 +134,26 @@ def create_skin_admin(
         return {"message": "Skin created successfully", "skin_id": skin_id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error creating skin: {str(e)}") from e
+    
+@app.put("/admin/skin/edit{skin_id}", status_code=status.HTTP_200_OK, response_model=Dict[str, str])
+def edit_skin_admin(
+    skin_id: int,
+    skin_data: EditSkinRequest = Body(..., description="Skin data to be updated"),
+    current_admin: dict = Depends(get_current_admin_user),
+    db: Session = Depends(get_db)
+    ) -> Dict[str, str]:
+    try:
+        if not skin_data.model_dump(exclude_none=True, by_alias=True):
+            raise HTTPException(status_code=400, detail="No fields provided for update.")
+        
+        db_service.edit_skin(skin_id, skin_data, db)
+        return {"message": "Skin updated successfully"}
+    except ValueError as e:
+        error_message = str(e)
+        if "Skin not found" in error_message:
+            raise HTTPException(status_code=404, detail=error_message)
+        else:
+            raise HTTPException(status_code=400, detail=error_message)
+             
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing update: {str(e)}")

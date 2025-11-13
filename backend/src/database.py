@@ -1,5 +1,5 @@
 from backend.src.settings import settings
-from backend.src.models import User, skins, CreateSkinRequest
+from backend.src.models import User, skins, CreateSkinRequest,EditSkinRequest
 from backend.src.db_models import UserTable, SkinTable   
 from sqlalchemy import create_engine, select, insert,text
 from sqlalchemy.orm import sessionmaker, Session
@@ -105,7 +105,32 @@ class DatabaseService:
                 db.rollback()
                 raise ValueError("Error creating skin") from e
             
+    def edit_skin(self, skin_id: int, skin: EditSkinRequest, db: Session) -> str:
+        try:
+            skin_update = db.get(SkinTable, skin_id)
+            if not skin_update:
+                raise ValueError("Skin not found")
             
+            if skin.name is not None:
+                skin_update.name = skin.name
+            if skin.type is not None:
+                skin_update.type = skin.type
+            if skin.float_value is not None:
+                skin_update.float_value = skin.float_value 
+            if skin.owner_id is not None:
+                skin_update.owner_id = skin.owner_id
+            if skin.link is not None:
+                skin_update.link = skin.link  
+            db.commit()
+            return str(skin_id) 
+            
+        except IntegrityError as e:
+            db.rollback()
+            raise ValueError("Error updating skin (possible invalid owner_id)") from e
+        except Exception as e:
+            db.rollback()
+            raise ValueError(f"Error updating skin: {str(e)}") from e
+        
 Database = DatabaseService
 
 def get_db():

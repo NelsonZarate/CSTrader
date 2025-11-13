@@ -25,3 +25,4 @@ class SkinTable(Base):
     float_value = Column(String, nullable=False)
     owner_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     date_created = Column(DateTime, default=datetime.now(timezone.utc))
+    link = Column(String,nullable=True)
