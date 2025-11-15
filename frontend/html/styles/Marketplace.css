@@ -227,13 +227,13 @@ select::-webkit-scrollbar-thumb:hover {
     transform: scale(1.05);
 }
 
-.btn-sell {
+.btn-buynow {
     background: transparent;
     color: var(--primary-color);
     border: 1px solid var(--border-color);
 }
 
-.btn-sell:hover {
+.btn-buynow:hover {
     border-color: var(--accent-color);
     color: var(--accent-color);
 }
@@ -296,7 +296,18 @@ select::-webkit-scrollbar-thumb:hover {
     text-overflow: ellipsis;
 }
 
-
+.reset {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    padding: 10px 16px 10px 16px;
+    border-radius: 8px;
+    color: var(--primary-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    position: relative;
+}
 
 /* options list */
 .custom-options {

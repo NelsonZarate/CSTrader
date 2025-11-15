@@ -4,6 +4,7 @@ export async function updateNavbarState() {
   const loggedOut = document.querySelector(".logged-out");
   const loggedIn = document.querySelector(".logged-in");
   const userNameEl = document.querySelector(".user-name");
+  const userFunds = document.querySelector(".user-funds");
   const logoutBtn = document.querySelector(".logout-button");
 
   const token = getToken();
@@ -19,11 +20,15 @@ export async function updateNavbarState() {
       const user = await getUserByEmail(email);
       userNameEl.textContent = user?.name || "User";
 
+      userFunds.textContent = user?.funds !== undefined ? `${user.funds} €` : "";
+
+
+
 
       if (user?.role === 'admin') {
         const adminSpan = document.createElement("span");
         adminSpan.textContent = " (Admin)";
-        adminSpan.style.color = "#ff3da5"; 
+        adminSpan.style.color = "#ff3da5";
         adminSpan.style.cursor = "pointer";
         userNameEl.appendChild(adminSpan);
 
@@ -47,5 +52,7 @@ export async function updateNavbarState() {
   } else {
     if (loggedOut) loggedOut.style.display = "flex";
     if (loggedIn) loggedIn.style.display = "none";
+
+
   }
 }

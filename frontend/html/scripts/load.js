@@ -7,8 +7,10 @@ export async function loadNavbar() {
     navbarContainer.innerHTML = html;
 }
 
+
+
 export async function loadFilters() {
-    const filterContainer = document.getElementById("filter_Container");
+    const filterContainer = document.getElementById("load_filter");
     if (!filterContainer) return;
 
     const response = await fetch("../components/filter.html");

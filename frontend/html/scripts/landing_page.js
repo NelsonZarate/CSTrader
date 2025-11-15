@@ -1,3 +1,5 @@
+import "./main.js"
+
 // === Primeiro carrossel (HERO) ===
 const slides = document.querySelectorAll(".hero-content");
 let current = 0;
