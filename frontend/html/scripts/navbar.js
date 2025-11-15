@@ -1,14 +1,5 @@
 import { getToken, logoutUser, getUserByEmail } from "./api.js";
 
-export async function loadNavbar() {
-  const navbarContainer = document.getElementById("navbar");
-  if (!navbarContainer) return;
-
-  const response = await fetch("../components/navbar.html");
-  const html = await response.text();
-  navbarContainer.innerHTML = html;
-}
-
 export async function updateNavbarState() {
   const loggedOut = document.querySelector(".logged-out");
   const loggedIn = document.querySelector(".logged-in");

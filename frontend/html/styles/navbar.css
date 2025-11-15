@@ -44,10 +44,6 @@
     transform-origin: left;
 }
 
-.logo-link {
-    pointer-events: none;
-}
-
 .logo-link::after {
     display: none;
 }
@@ -97,4 +93,3 @@
     color: var(--accent-color);
     font-weight: 600;
 }
-
