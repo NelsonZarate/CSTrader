@@ -99,7 +99,7 @@ export function logoutUser() {
 // /inventory → GET MY SKINS
 // -----------------------------
 export async function getMySkins() {
-  const response = await fetch(`${API_BASE_URL}/inventory`, {
+  const response = await fetch(`../marketplace_teste.json`, {
     headers: authHeaders(),
   });
 
