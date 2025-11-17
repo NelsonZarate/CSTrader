@@ -44,10 +44,6 @@
     transform-origin: left;
 }
 
-.logo-link {
-    pointer-events: none;
-}
-
 .logo-link::after {
     display: none;
 }
@@ -98,3 +94,23 @@
     font-weight: 600;
 }
 
+.teste {
+    border: 2px solid var(--border-color);
+    padding: 6px;
+    border-radius: 6px;
+}
+
+.user-funds {
+    color: var(--primary-color);
+    padding: 0 12px 0 12px;
+    font-weight: bold;
+}
+
+.logout-button:hover {
+    color: var(--accent-color);
+}
+
+.logout-button:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+}

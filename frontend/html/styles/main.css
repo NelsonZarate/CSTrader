@@ -5,7 +5,9 @@
   --primary-color: #ffffff;
   --accent-color: #b7a7ff;
   --hover-accent-color: #9b8aff;
-  --font-family: 'Inter', sans-serif;
+  --font-family: "Inter", sans-serif;
+  --text-muted: #ccc;
+  --border-color: rgba(255, 255, 255, 0.1);
 }
 
 body {

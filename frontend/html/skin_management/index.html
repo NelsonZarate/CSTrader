@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin — CSTrader</title>
+  <link rel="stylesheet" href="../styles/skin_management.css" />
+</head>
+<body>
+  <header>
+    <div id="navbar"></div>
+  </header>
+
+  <main>
+    <section class="inventory-hero">
+      <div>
+        <h1>Admin Panel</h1>
+        <p>Skin management</p>
+      </div>
+
+      <div class="controls">
+        <input id="search" class="search-input" placeholder="Search skins (e.g., Doppler, Tiger Tooth)" />
+        <select id="filter-type" class="select">
+          <option value="all">All knife types</option>
+          <option value="butterfly">Butterfly</option>
+          <option value="karambit">Karambit</option>
+          <option value="m9 bayonet">M9 Bayonet</option>
+          <option value="kukri">Kukri</option>
+        </select>
+        <select id="filter-skin" class="select">
+          <option value="all">All finishes</option>
+          <option value="tiger tooth">Tiger Tooth</option>
+          <option value="doppler">Doppler</option>
+          <option value="marble fade">Marble Fade</option>
+          <option value="case hardened">Case Hardened</option>
+        </select>
+
+        <select id="sort" class="select">
+          <option value="default">Sort: Default</option>
+          <option value="name-asc">Name (A-Z)</option>
+          <option value="name-desc">Name (Z-A)</option>
+          <option value="price-asc">Price (↑)</option>
+          <option value="price-desc">Price (↓)</option>
+          <option value="float-asc">Lowest Float </option>
+          <option value="float-desc">Highest Float</option>
+        </select>
+        <button id="reset" class="reset">Reset</button>
+        <button id="btn-add" class="btn">+ Add new skin</button>
+      </div>
+    </section>
+
+    <section id="skin_display" class="inventory-grid"></section>
+    <div id="empty" class="empty" style="display:none;">No skins match your filters.</div>
+
+    <!-- Drawer — substitui o modal. Fica dentro do main (como pediste). -->
+    <aside id="drawer" class="drawer" aria-hidden="true">
+      <div class="drawer-panel">
+        <div class="drawer-header">
+          <h2 id="drawer-title">Add Skin</h2>
+          <button id="drawer-close" class="btn">Close</button>
+        </div>
+
+        <form id="skin-form" class="drawer-form">
+          <label>Knife Type
+            <input id="f-type" required />
+          </label>
+          <label>Skin Type
+            <input id="f-skin" required />
+          </label>
+          <label>Price (€)
+            <input id="f-price" type="number" step="0.01" required />
+          </label>
+          <label>Float
+            <input id="f-float" required />
+          </label>
+          <label>Image URL
+            <input id="f-image" required />
+          </label>
+
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <button type="submit" id="btn-save" class="btn btn-primary">Save</button>
+            <button type="button" id="btn-cancel" class="btn">Cancel</button>
+            <button type="button" id="btn-delete" class="btn btn-danger" style="margin-left:auto;display:none;">Delete</button>
+          </div>
+        </form>
+      </div>
+    </aside>
+
+  </main>
+
+  <script type="module" src="../scripts/skin_management.js"></script>
+</body>
+</html>
