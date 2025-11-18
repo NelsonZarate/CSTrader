@@ -168,3 +168,21 @@ def get_all_skins(
         return skins
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving skin types: {str(e)}") from e
+    
+@app.get("/admin/skin/delete/{skin_id}", status_code=status.HTTP_200_OK, response_model=str)
+def delete_skin_admin(
+    skin_id: int,
+    current_admin: dict = Depends(get_current_admin_user),
+    db: Session = Depends(get_db)
+    ) -> str:
+    try:
+        db_service.delete_skin(skin_id, db)
+        return f"Skin with id: {skin_id} deleted successfully"
+    except ValueError as e:
+        error_message = str(e)
+        if "Skin not found" in error_message:
+            raise HTTPException(status_code=404, detail=error_message)
+        else:
+            raise HTTPException(status_code=400, detail=error_message)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting skin: {str(e)}") from e
