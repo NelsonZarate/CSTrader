@@ -136,7 +136,17 @@ class DatabaseService:
             query = select(SkinTable).order_by(SkinTable.type)
             result = db.execute(query).scalars().all()
             return result
-        
+    
+    def delete_skin(self, skin_id: int, db: Session) -> None:
+        try:
+            skin_to_delete = db.get(SkinTable, skin_id)
+            if not skin_to_delete:
+                raise ValueError("Skin not found")
+            db.delete(skin_to_delete)
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            raise ValueError(f"Error deleting skin: {str(e)}") from e
 Database = DatabaseService
 
 def get_db():
