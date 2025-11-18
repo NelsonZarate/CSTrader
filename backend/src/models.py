@@ -1,5 +1,5 @@
 from pydantic import BaseModel,Field,EmailStr,field_validator,ConfigDict
-from typing import Optional
+from typing import Optional,Dict
 
 class User(BaseModel):
     id: int 
@@ -126,3 +126,15 @@ class EditSkinRequest(BaseModel):
             }
         }
     )
+
+class SkinDisplay(BaseModel):
+    id: int
+    name: str
+    type: str
+    float_value: Optional[str]
+    owner_id: Optional[int]
+    link: Optional[str]
+
+    class Config:
+        # Permite mapear os campos do objeto ORM (SkinTable)
+        from_attributes = True

@@ -1,7 +1,7 @@
 from backend.src.settings import settings
 from backend.src.models import User, skins, CreateSkinRequest,EditSkinRequest
 from backend.src.db_models import UserTable, SkinTable   
-from sqlalchemy import create_engine, select, insert,text
+from sqlalchemy import create_engine, select, insert,text,distinct
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.exc import IntegrityError
 from typing import List, Dict
@@ -95,7 +95,8 @@ class DatabaseService:
                 type=skin.type,
                 float_value=skin.float_value,
                 owner_id=0,
-                date_created=datetime.now(timezone.utc)
+                date_created=datetime.now(timezone.utc),
+                link=skin.link
             )
             db.add(db_skin)
             db.commit()
@@ -130,6 +131,11 @@ class DatabaseService:
         except Exception as e:
             db.rollback()
             raise ValueError(f"Error updating skin: {str(e)}") from e
+        
+    def get_all_skins(self,db: Session) -> List[Dict]:
+            query = select(SkinTable).order_by(SkinTable.type)
+            result = db.execute(query).scalars().all()
+            return result
         
 Database = DatabaseService
 

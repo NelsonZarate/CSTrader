@@ -25,4 +25,4 @@ class SkinTable(Base):
     float_value = Column(String, nullable=False)
     owner_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     date_created = Column(DateTime, default=datetime.now(timezone.utc))
-    link = Column(String,nullable=True)
+    link = Column(String,default="https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XuWbwcuyMESA4Fdl-4nnpU7iQA3-kKnr8ytd6s2te7cjd6HHXmHBxep157VtTi_rzUR-5WiHnt39c3_EZg4pW5UjQOZbsBCxw8qnab32FBG7RA/280x210")
