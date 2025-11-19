@@ -28,7 +28,7 @@ function renderList(list) {
         <div>
           <div class="skin-name">${s.name}</div>
         </div>
-      <div class="skin-thumb"><img src="${s.image}" alt="${s.name}"></div>
+      <div class="skin-thumb"><img src="${s.link}" alt="${s.name}"></div>
       <div>
         <div class="skin-sub">${s.float}</div>
       </div>
