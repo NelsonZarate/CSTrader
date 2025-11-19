@@ -56,12 +56,33 @@ function setupModalEvents() {
       if (!skin) return console.error("Skin não encontrada no modal.");
       if (!user) return console.error("User não encontrado.");
 
-      console.log(user?.funds);
-
       if (user.funds >= skin.value) {
-        console.log("✔️ pode comprar skin:", skin.name);
+        Swal.fire({
+          title: "Transaction Completed!",
+          text: `Congratulations! The item ${skin.name} has been added to your collection.`,
+          icon: "success",
+          timer: 1800,
+          showConfirmButton: false,
+          customClass: {
+            popup: "elegant-success-popup",
+          },
+        });
       } else {
-        console.log("❌ fundos insuficientes");
+        Swal.fire({
+          title: "Insufficient Balance",
+          text: `To acquire ${skin.name}, you need more funds. Would you like to top up now?`,
+          icon: "error",
+          confirmButtonText: "✅ Add Funds",
+          timer: 5000,
+          customClass: {
+            confirmButton: "btn btn-primary",
+            cancelButton: "btn btn-secondary",
+          },
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.replace = "#"; //mudar dpsssssssssssssssssssssssssssssssssssssss
+          }
+        });
       }
     }
   });
