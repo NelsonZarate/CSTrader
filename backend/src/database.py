@@ -85,7 +85,8 @@ class DatabaseService:
                     "type": skin.type,
                     "float_value": skin.float_value,
                     "owner_id": skin.owner_id,
-                    "date_created": skin.date_created
+                    "date_created": skin.date_created,
+                    "link": skin.link
                 })
             return skins_data
     def create_skin(self, skin: CreateSkinRequest, db: Session) -> str:       
