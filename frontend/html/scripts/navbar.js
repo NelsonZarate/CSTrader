@@ -20,24 +20,20 @@ export async function updateNavbarState() {
       const user = await getUserByEmail(email);
       userNameEl.textContent = user?.name || "User";
 
-      userFunds.textContent = user?.funds !== undefined ? `${user.funds} €` : "";
+      userFunds.textContent =
+        user?.funds !== undefined ? `${user.funds} €` : "";
 
-
-
-
-      if (user?.role === 'admin') {
+      if (user?.role === "admin") {
         const adminSpan = document.createElement("span");
         adminSpan.textContent = " (Admin)";
         adminSpan.style.color = "#ff3da5";
         adminSpan.style.cursor = "pointer";
         userNameEl.appendChild(adminSpan);
 
-
         adminSpan.onclick = () => {
-          window.location.replace("#"); // ver dps com o gonçalo!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+          window.location.replace("../skin_management/index.html");
         };
       }
-
     } catch (error) {
       console.error("Erro ao carregar dados do utilizador:", error);
       userNameEl.textContent = "User";
@@ -52,7 +48,5 @@ export async function updateNavbarState() {
   } else {
     if (loggedOut) loggedOut.style.display = "flex";
     if (loggedIn) loggedIn.style.display = "none";
-
-
   }
 }

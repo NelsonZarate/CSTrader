@@ -1,62 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CSTrader</title>
+    <link rel="stylesheet" href="../styles/Marketplace.css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CSTrader</title>
-  <link rel="stylesheet" href="../styles/Marketplace.css">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+  <body>
+    <header>
+      <div id="navbar"></div>
+    </header>
 
-</head>
+    <main>
+      <section class="inventory-hero">
+        <div>
+          <h1>Marketplace</h1>
+          <p>Explore, buy, or trade your favorite skins with ease!</p>
+        </div>
 
-<body>
+        <div class="controls">
+          <input
+            id="search"
+            class="search-input"
+            placeholder="Search skins (e.g., Doppler, Tiger Tooth)"
+          />
+          <select id="filter-type" class="select">
+            <option value="all">All knife types</option>
+            <option value="butterfly">Butterfly</option>
+            <option value="karambit">Karambit</option>
+            <option value="m9 bayonet">M9 Bayonet</option>
+            <option value="kukri">Kukri</option>
+          </select>
+          <select id="filter-skin" class="select">
+            <option value="all">All finishes</option>
+            <option value="tiger tooth">Tiger Tooth</option>
+            <option value="doppler">Doppler</option>
+            <option value="marble fade">Marble Fade</option>
+            <option value="case hardened">Case Hardened</option>
+          </select>
+          <select id="sort" class="select">
+            <option value="default">Sort: Default</option>
+            <option value="name-asc">Name (A-Z)</option>
+            <option value="name-desc">Name (Z-A)</option>
+            <option value="price-asc">Price (↑)</option>
+            <option value="price-desc">Price (↓)</option>
+            <option value="float-asc">Lowest Float</option>
+            <option value="float-desc">Highest Float</option>
+          </select>
+          <button id="reset" class="reset">Reset</button>
+        </div>
+      </section>
 
-  <header>
-    <div id="navbar"></div>
-  </header>
-
-  <main>
-    <section class="inventory-hero">
-      <div>
-        <h1>Marketplace</h1>
-        <p>Explore, buy, or trade your favorite skins with ease!</p>
+      <section id="skin_display" class="inventory-grid"></section>
+      <div id="empty" class="empty" style="display: none">
+        No skins match your filters.
       </div>
 
-      <div class="controls">
-        <input id="search" class="search-input" placeholder="Search skins (e.g., Doppler, Tiger Tooth)" />
-        <select id="filter-type" class="select">
-          <option value="all">All knife types</option>
-          <option value="butterfly">Butterfly</option>
-          <option value="karambit">Karambit</option>
-          <option value="m9 bayonet">M9 Bayonet</option>
-          <option value="kukri">Kukri</option>
-        </select>
-        <select id="filter-skin" class="select">
-          <option value="all">All finishes</option>
-          <option value="tiger tooth">Tiger Tooth</option>
-          <option value="doppler">Doppler</option>
-          <option value="marble fade">Marble Fade</option>
-          <option value="case hardened">Case Hardened</option>
-        </select>
-        <select id="sort" class="select">
-          <option value="default">Sort: Default</option>
-          <option value="name-asc">Name (A-Z)</option>
-          <option value="name-desc">Name (Z-A)</option>
-          <option value="price-asc">Price (↑)</option>
-          <option value="price-desc">Price (↓)</option>
-          <option value="float-asc">Lowest Float </option>
-          <option value="float-desc">Highest Float</option>
-        </select>
-        <button id="reset" class="reset">Reset</button>
-      </div>
-    </section>
+      <div class="modal-market" id="modal-market">
 
-    <section id="skin_display" class="inventory-grid"></section>
-    <div id="empty" class="empty" style="display:none;">No skins match your filters.</div>
-  </main>
+    </main>
 
-  <script type="module" src="../scripts/marketplace.js"></script>
-</body>
-
+    <script type="module" src="../scripts/marketplace.js"></script>
+  </body>
 </html>

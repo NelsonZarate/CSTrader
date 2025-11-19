@@ -1,6 +1,5 @@
 @import url(./main.css);
-
-/* ---------------- Inventory ---------------- */
+@import url(./modal_marketplace.css);
 
 .inventory-hero {
     padding: 60px 8% 40px;
@@ -206,6 +205,7 @@ select::-webkit-scrollbar-thumb:hover {
 .actions {
     display: flex;
     gap: 10px;
+    justify-content: right;
 }
 
 .btn {
@@ -215,16 +215,6 @@ select::-webkit-scrollbar-thumb:hover {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-}
-
-.btn-trade {
-    background: var(--accent-color);
-    color: var(--background-color);
-}
-
-.btn-trade:hover {
-    background: var(--hover-accent-color);
-    transform: scale(1.05);
 }
 
 .btn-buynow {
