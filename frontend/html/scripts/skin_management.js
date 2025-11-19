@@ -1,4 +1,4 @@
-import { getMySkins } from "./api.js";
+import { adminCreateSkin, getMySkins } from "./api.js";
 import "./dropdown_style.js"
 import "./main.js"
 
@@ -181,32 +181,38 @@ function doDelete(id) {
 }
 
 /* Form submit (save new or edit) */
-form.addEventListener("submit", (e) => {
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const knifeType = fType.value.trim();
-  const skinType = fSkin.value.trim();
-  const name = `${knifeType.charAt(0).toUpperCase() + knifeType.slice(1)} ${skinType.charAt(0).toUpperCase() + skinType.slice(1)}`;
+  const skinType  = fSkin.value.trim();
 
+  // Payload EXACTO, sem criar nenhum "name"
   const payload = {
-    id: form.dataset.editing ? Number(form.dataset.editing) : uid(),
-    name,
-    knifeType,
-    skinType,
+    id: 0, // se o backend exigir
+    type: knifeType,
+    name: skinType,
+    float_value: fFloat.value.trim(), // varchar
     value: Number(fPrice.value) || 0,
-    float: normalizeFloat(fFloat.value.trim()),
-    image: fImage.value.trim(),
+    owner_id: 0,
+    link: fImage.value.trim(),
+    date_created: new Date().toISOString(),
   };
 
-  if (form.dataset.editing) {
-    skins = skins.map((s) => (s.id === payload.id ? payload : s));
-  } else {
-    skins.unshift(payload);
-  }
+  try {
+    await adminCreateSkin(payload);
 
-  hideDrawer();
-  applyFilters();
+    skins = await getMySkins();
+    applyFilters();
+    hideDrawer();
+
+  } catch (err) {
+    console.error("Erro ao criar skin:", err);
+    alert("Erro ao criar skin: " + err.message);
+  }
 });
+
+
 
 /* Drawer buttons */
 btnAdd.addEventListener("click", openAdd);

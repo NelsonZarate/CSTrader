@@ -107,14 +107,43 @@ export function logoutUser() {
 // /inventory → GET MY SKINS
 // -----------------------------
 export async function getMySkins() {
-  const response = await fetch(`../marketplace_teste.json`, {
+  const response = await fetch(`${API_BASE_URL}/inventory`, {
     headers: authHeaders(),
   });
 
   const data = await response.json();
   if (!response.ok) throw new Error(data.detail || "Erro ao obter skins.");
-  return data;
+
+  console.log("Raw skins data:", data.skins);
+
+  const mapped = (data.skins || []).map(s => {
+
+    // 🔥 o backend manda:
+    // s.type → knife type
+    // s.name → skin type
+    const knife = s.type || "";
+    const skin  = s.name || ""; // <--- aqui está a diferença importante
+
+    // Nome para exibir (não enviado ao backend)
+    const displayName =
+      `${knife.charAt(0).toUpperCase() + knife.slice(1)} ` +
+      `${skin.charAt(0).toUpperCase() + skin.slice(1)}`;
+
+    return {
+      id: s.id,
+      name: displayName,       // <--- só para mostrar no front-end
+      knifeType: knife,        // <--- campo original
+      skinType: skin,          // <--- campo original (vem de s.name)
+      float: s.float_value || "Unknown",
+      value: s.value ?? 0,
+      image: s.link || "/path/to/placeholder.png",
+    };
+  });
+
+  return mapped;
 }
+
+
 
 // -----------------------------
 // /user/skins/{user_id} GET Skins por ID
@@ -134,16 +163,30 @@ export async function getUserSkinsById(userId) {
 // POST /admin/skins → Criar skin (ADMIN)
 // -----------------------------
 export async function adminCreateSkin(skinData) {
+  const payload = {
+    id: 0, // ID fixo como pediste
+    name: skinData.name,
+    type: skinData.type,
+    skin_type: skinData.skin_type,
+    float_value: skinData.float_value,
+    value: skinData.value,
+    link: skinData.link,
+    date_created: new Date().toISOString(), // timestamp no formato ISO
+  };
+
   const response = await fetch(`${API_BASE_URL}/admin/skins`, {
     method: "POST",
     headers: authHeaders(),
-    body: JSON.stringify(skinData),
+    body: JSON.stringify(payload),
   });
 
   const data = await response.json();
   if (!response.ok) throw new Error(data.detail || "Erro ao criar skin.");
+
   return data;
 }
+
+
 
 // -----------------------------
 // PUT /admin/skin/edit/{skin_id} → Editar skin
