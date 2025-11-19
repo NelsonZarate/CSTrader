@@ -59,7 +59,8 @@ export async function getUsers() {
   const response = await fetch(`${API_BASE_URL}/get_users`);
   const data = await response.json();
 
-  if (!response.ok) throw new Error(data.detail || "Erro ao obter utilizadores.");
+  if (!response.ok)
+    throw new Error(data.detail || "Erro ao obter utilizadores.");
   return data;
 }
 
@@ -71,21 +72,28 @@ export async function getUserByEmail(email) {
   const response = await fetch(`${API_BASE_URL}/get_user/${encoded}`);
   const data = await response.json();
 
-  if (!response.ok) throw new Error(data.detail || "Erro ao buscar utilizador.");
+  if (!response.ok)
+    throw new Error(data.detail || "Erro ao buscar utilizador.");
   return data.user;
 }
 
 // -----------------------------
 // /users/me  → GET MY DATA
 // -----------------------------
-export async function getMyData() {
-  const response = await fetch(`${API_BASE_URL}/users/me`, {
-    headers: authHeaders(),
+export async function getLoggedUser() {
+  const token = localStorage.getItem("token");
+  const res = await fetch(`${API_BASE_URL}/users/me`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
   });
 
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.detail || "Erro ao obter os seus dados.");
-  return data;
+  if (!res.ok) {
+    throw new Error(`Erro ao buscar user: ${res.status}`);
+  }
+
+  return res.json();
 }
 
 // -----------------------------
@@ -117,7 +125,8 @@ export async function getUserSkinsById(userId) {
   });
 
   const data = await response.json();
-  if (!response.ok) throw new Error(data.detail || "Erro ao obter skins do utilizador.");
+  if (!response.ok)
+    throw new Error(data.detail || "Erro ao obter skins do utilizador.");
   return data;
 }
 
@@ -151,17 +160,36 @@ export async function adminEditSkin(skinId, skinData) {
   return data;
 }
 
-
 // -----------------------------
 // GET SKINS FOR MARKETPLACE
 // -----------------------------
 export async function getMarketplace() {
-  const response = await fetch(`../marketplace_teste.json`, { /*Mudar Endpoint tomasssssss dps pedir ao nelson para criar o ENDPOINT*/
+  const response = await fetch(`../marketplace_teste.json`, {
+    /*Mudar Endpoint tomasssssss dps pedir ao nelson para criar o ENDPOINT*/
     method: "GET",
     headers: authHeaders(),
   });
 
   const data = await response.json();
-  if (!response.ok) throw new Error(data.detail || "Falha ao buscar skins do marketplace.");
+  if (!response.ok)
+    throw new Error(data.detail || "Falha ao buscar skins do marketplace.");
   return data;
+}
+
+// -----------------------------
+// COMPRAR SKIN
+// -----------------------------
+export async function buySkin(skinId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/buy_skin/${skinId}`, {
+      /*mudar endpoint*/ method: "POST",
+      headers: authHeaders(),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.detail || "Erro ao comprar skin.");
+    return data;
+  } catch (err) {
+    console.error("Erro ao comprar skin:", err);
+    throw err;
+  }
 }
