@@ -1,6 +1,6 @@
 from backend.src.settings import settings
 from backend.src.models import User, skins, CreateSkinRequest,EditSkinRequest
-from backend.src.db_models import UserTable, SkinTable   
+from backend.src.db_models import UserTable, SkinTable, Transaction
 from sqlalchemy import create_engine, select, insert,text,distinct
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.exc import IntegrityError
@@ -54,12 +54,14 @@ class DatabaseService:
                 db.rollback()
                 raise ValueError("ADMIN with this id or email already exist") from e
     
-    def get_user_by_email(self, email: str, db: Session) -> User | None:
-        query = select(UserTable).where(UserTable.email == email)
-        result = db.execute(query).scalar_one_or_none()
-        if result:
-            return User.model_validate(result)
-        return None
+    def get_user_by_email(self, email: str, db: Session) -> UserTable | None:
+        try:
+            query = select(UserTable).where(UserTable.email == email)
+            result = db.execute(query).scalar_one_or_none()  # Retorna ORM UserTable
+            return result
+        except Exception as e:
+            raise ValueError(f"Erro ao buscar usuário por email: {str(e)}")
+
         
     def get_all_users(self,db: Session) -> List[Dict]:
             query = select(UserTable)
@@ -148,6 +150,18 @@ class DatabaseService:
         except Exception as e:
             db.rollback()
             raise ValueError(f"Error deleting skin: {str(e)}") from e
+        
+    def create_transaction(self, user_id: int, amount: float, transaction_type: str, db: Session):
+        transaction = Transaction(
+            user_id=user_id,
+            amount=amount,
+            type=transaction_type
+        )
+        db.add(transaction)
+        db.commit()
+        db.refresh(transaction)
+        return transaction.id
+
 Database = DatabaseService
 
 def get_db():

@@ -236,3 +236,28 @@ export async function buySkin(skinId) {
     throw err;
   }
 }
+
+// -----------------------------
+// POST /trocas → Criar transação de compra
+// -----------------------------
+export async function createTrade(idUser, idSkin) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/trocas`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({
+        id_user: idUser,
+        id_skin: idSkin,
+      }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.detail || "Erro ao criar troca.");
+
+    return data;
+  } catch (err) {
+    console.error("Erro ao enviar troca:", err);
+    throw err;
+  }
+}
+
