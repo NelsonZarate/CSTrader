@@ -207,8 +207,7 @@ export async function adminEditSkin(skinId, skinData) {
 // GET SKINS FOR MARKETPLACE
 // -----------------------------
 export async function getMarketplace() {
-  const response = await fetch(`../marketplace_teste.json`, {
-    /*Mudar Endpoint tomasssssss dps pedir ao nelson para criar o ENDPOINT*/
+  const response = await fetch(`${API_BASE_URL}/marketplace/skins`, {
     method: "GET",
     headers: authHeaders(),
   });
