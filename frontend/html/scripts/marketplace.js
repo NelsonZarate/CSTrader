@@ -1,4 +1,9 @@
-import { getMarketplace, buySkin, getToken, getUserByEmail } from "./api.js";
+import {
+  getMarketplace,
+  createTrade,
+  getToken,
+  getUserByEmail,
+} from "./api.js";
 import "./dropdown_style.js";
 import "./main.js";
 
@@ -57,11 +62,17 @@ function setupModalEvents() {
       if (!user) return console.error("User não encontrado.");
 
       if (user.funds >= skin.value) {
+        const idUser = user.id;
+        const idSkin = skin.id;
+        await createTrade(idUser, idSkin);
+
+        const modal = e.target.closest(".modal-market");
+        if (modal) modal.style.display = "none";
         Swal.fire({
           title: "Transaction Completed!",
           text: `Congratulations! The item ${skin.name} has been added to your collection.`,
           icon: "success",
-          timer: 1800,
+          timer: 2000,
           showConfirmButton: false,
           customClass: {
             popup: "elegant-success-popup",

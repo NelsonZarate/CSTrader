@@ -138,3 +138,16 @@ class SkinDisplay(BaseModel):
     class Config:
         # Permite mapear os campos do objeto ORM (SkinTable)
         from_attributes = True
+
+class DepositRequest(BaseModel):
+    amount: float = Field(..., description="Amount to deposit")
+
+    @field_validator("amount")
+    def validate_amount(cls, v):
+        if v <= 0:
+            raise ValueError("O valor deve ser maior que zero.")
+        if v > 10000:
+            raise ValueError("O valor máximo permitido é 10000.")
+        return v
+
+
