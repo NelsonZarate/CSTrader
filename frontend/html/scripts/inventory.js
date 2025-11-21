@@ -32,9 +32,6 @@ function renderList(list) {
       <div>
         <div class="skin-sub">${s.float}</div>
       </div>
-      <div class="skin-meta">
-        <div class="price">€${s.value.toFixed(2)}</div>
-      </div>
       <div class="actions">
         <button class="btn btn-buynow">Sell Now</button>
       </div>
@@ -44,6 +41,48 @@ function renderList(list) {
     setTimeout(() => card.classList.add("visible"), 70 * idx);
   });
 }
+
+function refreshCustomSelect(select) {
+  const next = select.nextElementSibling;
+  if (next && next.classList.contains("custom-select")) {
+    next.remove();
+  }
+
+  delete select.dataset.enhanced;
+
+  document.dispatchEvent(
+    new CustomEvent("force-enhance-select", { detail: select })
+  );
+}
+
+
+
+function populateDropdowns(skins) {
+  const knifeTypes = [...new Set(skins.map(s => s.knifeType).filter(Boolean))].sort();
+  const skinTypes = [...new Set(skins.map(s => s.skinType).filter(Boolean))].sort();
+
+  filterType.innerHTML = `<option value="all">All knife types</option>`;
+  knifeTypes.forEach(type => {
+    const opt = document.createElement("option");
+    opt.value = type;
+    opt.textContent = type;
+    filterType.appendChild(opt);
+  });
+
+  filterSkin.innerHTML = `<option value="all">All finishes</option>`;
+  skinTypes.forEach(finish => {
+    const opt = document.createElement("option");
+    opt.value = finish;
+    opt.textContent = finish;
+    filterSkin.appendChild(opt);
+  });
+
+  // 🔥 IMPORTANTE (tal como faz o skin_management)
+  refreshCustomSelect(filterType);
+  refreshCustomSelect(filterSkin);
+}
+
+
 
 function applyFilters() {
   let out = skins.slice();
@@ -144,7 +183,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     skins = await getMySkins();
+    populateDropdowns(skins);  // <- CUIDADO: esta é a nova linha
     applyFilters();
+
   } catch (err) {
     console.error("Authentication error:", err);
     empty.style.display = "block";

@@ -1,5 +1,5 @@
 // Select -> CustomSelect enhancer
-(function() {
+(function () {
   function enhanceSelect(select) {
     if (select.dataset.enhanced) return;
     select.dataset.enhanced = "1";
@@ -123,4 +123,11 @@
   document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('select.select').forEach(enhanceSelect);
   });
+
+  document.addEventListener("force-enhance-select", (e) => {
+  enhanceSelect(e.detail);
+});
+
+
+
 })();

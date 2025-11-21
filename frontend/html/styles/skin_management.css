@@ -328,12 +328,10 @@ select::-webkit-scrollbar-thumb:hover {
 
 /* Form inside drawer reuses modal styles */
 .drawer-form {
-  display:flex;
-  flex-direction:column;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
   padding-bottom: 24px;
-  overflow-y: auto;
-  max-height: calc(100vh - 140px);
 }
 
 .drawer-form label {
