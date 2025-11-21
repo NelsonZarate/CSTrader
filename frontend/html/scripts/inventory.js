@@ -1,4 +1,4 @@
-import { getMySkins } from "./api.js";
+import { getMySkins, getToken, getUserByEmail } from "./api.js";
 import "./dropdown_style.js";
 import "./main.js";
 
@@ -114,12 +114,41 @@ function applyFilters() {
 
 document.addEventListener("DOMContentLoaded", async () => {
   try {
+    const token = getToken();
+
+    if (!token) {
+      empty.style.display = "block";
+      empty.textContent = "You must be logged in to view your inventory.";
+      container.innerHTML = "";
+      return;
+    }
+
+    let payload;
+    try {
+      payload = JSON.parse(atob(token.split(".")[1]));
+    } catch (err) {
+      empty.style.display = "block";
+      empty.textContent = "Invalid session. Please log in again.";
+      container.innerHTML = "";
+      return;
+    }
+
+    const email = payload.sub;
+    const user = await getUserByEmail(email);
+
+    if (!user || !user.email) {
+      empty.style.display = "block";
+      empty.textContent = "You must be logged in to view your inventory.";
+      container.innerHTML = "";
+      return;
+    }
+
     skins = await getMySkins();
     applyFilters();
   } catch (err) {
-    console.error("Erro ao buscar skins:", err);
+    console.error("Authentication error:", err);
     empty.style.display = "block";
-    empty.textContent = "Não foi possível carregar as skins.";
+    empty.textContent = "Unable to load your skins.";
   }
 });
 

@@ -39,7 +39,6 @@ function setupModalEvents() {
   const modal = document.getElementById("modal-market");
   if (!modal) return;
 
-  // Cancelar modal
   document.addEventListener("click", (e) => {
     if (e.target.matches(".btn-cancel")) {
       const modal = e.target.closest(".modal-market");
@@ -47,7 +46,6 @@ function setupModalEvents() {
     }
   });
 
-  // Confirmar compra
   document.addEventListener("click", async (e) => {
     if (e.target.matches(".btn-buynow-confirm")) {
       const modal = e.target.closest(".modal-market");
@@ -109,7 +107,7 @@ function renderList(list) {
     return;
   }
   empty.style.display = "none";
-  
+
   list.forEach((s, idx) => {
     console.log(s);
     const card = document.createElement("div");
@@ -133,10 +131,41 @@ function renderList(list) {
     container.appendChild(card);
 
     const btn = card.querySelector(".btn-buynow");
-    if (btn) btn.addEventListener("click", () => openMarketModal(s));
+    if (btn) btn.addEventListener("click", () => handleBuyClick(s));
 
     setTimeout(() => card.classList.add("visible"), 70 * idx);
   });
+}
+
+function handleBuyClick(skin) {
+  const token = getToken();
+
+  if (!token) {
+    Swal.fire({
+      title: "Login Required",
+      text: "You must be logged in to buy items.",
+      icon: "error",
+      timer: 3000,
+      showConfirmButton: false,
+    });
+    return;
+  }
+
+  let payload;
+  try {
+    payload = JSON.parse(atob(token.split(".")[1]));
+  } catch (err) {
+    Swal.fire({
+      title: "Invalid Session",
+      text: "Your session is invalid. Please log in again.",
+      icon: "error",
+      timer: 3000,
+      showConfirmButton: false,
+    });
+    return;
+  }
+
+  openMarketModal(skin);
 }
 
 function applyFilters() {
