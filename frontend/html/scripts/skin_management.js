@@ -1,4 +1,4 @@
-import { adminCreateSkin, getMySkins } from "./api.js";
+import { adminCreateSkin, adminEditSkin, getAllSkins, adminDeleteSkin } from "./api.js";
 import "./dropdown_style.js"
 import "./main.js"
 
@@ -12,7 +12,6 @@ const sortSelect = document.getElementById("sort");
 const resetBtn = document.getElementById("reset");
 const btnAdd = document.getElementById("btn-add");
 
-// Drawer elements (substitui o modal)
 const drawer = document.getElementById("drawer");
 const drawerTitle = document.getElementById("drawer-title");
 const drawerClose = document.getElementById("drawer-close");
@@ -23,20 +22,35 @@ const btnSave = document.getElementById("btn-save");
 
 const fType = document.getElementById("f-type");
 const fSkin = document.getElementById("f-skin");
-const fPrice = document.getElementById("f-price");
+const fQuantity = document.getElementById("f-quantity");
 const fFloat = document.getElementById("f-float");
-const fImage = document.getElementById("f-image");
+const fLink = document.getElementById("f-link");
+const fQuantityWrapper = fQuantity.parentElement;
 
 let skins = [];
 
-/* Utility functions */
-function uid() {
-  // simple uid for demo; replace with your server ids when using endpoints
-  return Date.now() + Math.floor(Math.random() * 10000);
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    skins = await getAllSkins();
+    populateFilters();
+    applyFilters();
+  } catch (err) {
+    console.error("Error fetching skins:", err);
+    empty.style.display = "block";
+    empty.textContent = "Unable to load skins.";
+  }
+});
+
+function refreshCustomSelect(select) {
+  const next = select.nextElementSibling;
+  if (next && next.classList.contains("custom-select")) next.remove();
+  delete select.dataset.enhanced;
+  document.dispatchEvent(new CustomEvent("force-enhance-select", { detail: select }));
 }
 
-function formatPrice(v) {
-  return "€" + v.toFixed(2);
+function capitalize(s) {
+  if (!s) return "";
+  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 }
 
 function normalizeFloat(f) {
@@ -51,7 +65,7 @@ function normalizeFloat(f) {
   return map[f.toLowerCase()] || f;
 }
 
-/* Drawer show/hide */
+// Drawer controls
 function showDrawer() {
   drawer.classList.add("active");
   drawer.setAttribute("aria-hidden", "false");
@@ -60,12 +74,51 @@ function showDrawer() {
 function hideDrawer() {
   drawer.classList.remove("active");
   drawer.setAttribute("aria-hidden", "true");
-  // clear editing dataset if needed
   form.dataset.editing = "";
   btnDelete.style.display = "none";
 }
 
-/* Render list */
+// Populate filters
+function populateFilters() {
+  const types = [...new Set(skins.map(s => capitalize(s.type)))].sort();
+  const names = [...new Set(skins.map(s => capitalize(s.name)))].sort();
+
+  filterType.innerHTML = '<option value="all">All knife types</option>';
+  filterSkin.innerHTML = '<option value="all">All finishes</option>';
+
+  types.forEach(type => {
+    const opt = document.createElement("option");
+    opt.value = type;
+    opt.textContent = type;
+    filterType.appendChild(opt);
+  });
+
+  names.forEach(name => {
+    const opt = document.createElement("option");
+    opt.value = name;
+    opt.textContent = name;
+    filterSkin.appendChild(opt);
+  });
+
+  refreshCustomSelect(filterType);
+  refreshCustomSelect(filterSkin);
+}
+
+function groupSkins(list) {
+  const groups = {};
+  list.forEach(s => {
+    const key = `${s.type}|${s.name}|${s.float_value}`;
+    if (!groups[key]) {
+      groups[key] = { ...s, quantity: 1, idList: [s.id] };
+    } else {
+      groups[key].quantity++;
+      groups[key].idList.push(s.id);
+    }
+  });
+  return Object.values(groups);
+}
+
+// Render skins
 function renderList(list) {
   container.innerHTML = "";
   if (!list.length) {
@@ -79,187 +132,166 @@ function renderList(list) {
     card.className = "skin-card";
     card.dataset.id = s.id;
 
-    // Create inner html with Edit and Delete buttons
     card.innerHTML = `
-      <div>
-        <div class="skin-name">${s.name}</div>
-      </div>
-      <div class="skin-thumb"><img src="${s.image}" alt="${s.name}"></div>
-      <div>
-        <div class="skin-sub">${s.float}</div>
-      </div>
-      <div class="skin-meta">
-        <div class="price">${formatPrice(s.value)}</div>
-      </div>
+      <div><div class="skin-name">${s.type} ${s.name}</div></div>
+      <div class="skin-thumb"><img src="${s.link}" alt="${s.name}"></div>
+      <div><div class="skin-sub">${s.float_value} — <strong>x${s.quantity}</strong></div></div>
       <div class="actions">
-        <button class="btn btn-edit" data-action="edit" data-id="${s.id}">Edit</button>
-        <button class="btn btn-danger" data-action="delete" data-id="${s.id}">Delete</button>
+        <button class="btn btn-edit" data-action="edit" data-ids='${JSON.stringify(s.idList)}'>Edit</button>
+        <button class="btn btn-danger" data-action="delete" data-ids='${JSON.stringify(s.idList)}'>Delete</button>
       </div>
     `;
+
     container.appendChild(card);
-    // small staggered animation
     setTimeout(() => card.classList.add("visible"), 70 * idx);
   });
 }
 
-/* Filters/sorting */
+// Filters & sorting
 function applyFilters() {
   let out = skins.slice();
   const q = (searchInput.value || "").toLowerCase();
-  if (q) out = out.filter(s => (s.name + s.knifeType + s.skinType).toLowerCase().includes(q));
 
-  if (filterType.value !== "all") out = out.filter(s => s.knifeType === filterType.value);
-  if (filterSkin.value !== "all") out = out.filter(s => s.skinType === filterSkin.value);
+  if (q) out = out.filter(s => (s.name + s.type).toLowerCase().includes(q));
+  if (filterType.value !== "all") out = out.filter(s => s.type.toLowerCase() === filterType.value.toLowerCase());
+  if (filterSkin.value !== "all") out = out.filter(s => s.name.toLowerCase() === filterSkin.value.toLowerCase());
 
-  const floatOrder = {
-    "Factory New": 1,
-    "Minimal Wear": 2,
-    "Field-Tested": 3,
-    "Well-Worn": 4,
-    "Battle-Scarred": 5
-  };
+  const floatOrder = { "Factory New": 1, "Minimal Wear": 2, "Field-Tested": 3, "Well-Worn": 4, "Battle-Scarred": 5 };
 
   switch (sortSelect.value) {
-    case "name-asc":
-      out.sort((a, b) => a.name.localeCompare(b.name));
-      break;
-    case "name-desc":
-      out.sort((a, b) => b.name.localeCompare(a.name));
-      break;
-    case "price-asc":
-      out.sort((a, b) => a.value - b.value);
-      break;
-    case "price-desc":
-      out.sort((a, b) => b.value - a.value);
-      break;
-    case "float-asc":
-      out.forEach(s => s.float = normalizeFloat(s.float));
-      out.sort((a, b) => (floatOrder[a.float] || 99) - (floatOrder[b.float] || 99));
-      break;
-    case "float-desc":
-      out.forEach(s => s.float = normalizeFloat(s.float));
-      out.sort((a, b) => (floatOrder[b.float] || 99) - (floatOrder[a.float] || 99));
-      break;
+    case "name-asc": out.sort((a, b) => a.name.localeCompare(b.name)); break;
+    case "name-desc": out.sort((a, b) => b.name.localeCompare(a.name)); break;
+    case "price-asc": out.sort((a, b) => a.value - b.value); break;
+    case "price-desc": out.sort((a, b) => b.value - a.value); break;
+    case "float-asc": out.sort((a, b) => (floatOrder[normalizeFloat(a.float_value)] || 99) - (floatOrder[normalizeFloat(b.float_value)] || 99)); break;
+    case "float-desc": out.sort((a, b) => (floatOrder[normalizeFloat(b.float_value)] || 99) - (floatOrder[normalizeFloat(a.float_value)] || 99)); break;
   }
 
-  renderList(out);
+  renderList(groupSkins(out));
 }
 
-/* Open drawer for adding */
+// Add drawer
 function openAdd() {
-  drawerTitle.textContent = "Adicionar Skin";
+  drawerTitle.textContent = "Add Skin";
   form.dataset.editing = "";
   btnDelete.style.display = "none";
+
   fType.value = "";
   fSkin.value = "";
-  fPrice.value = "";
+  fQuantity.value = 1;
   fFloat.value = "";
-  fImage.value = "";
+  fLink.value = "";
+
+  fQuantityWrapper.style.display = "flex"; // show quantity
   showDrawer();
 }
 
-/* Open drawer for editing */
-function openEdit(id) {
-  const s = skins.find(x => String(x.id) === String(id));
-  if (!s) return alert("Skin não encontrada");
-  drawerTitle.textContent = "Editar Skin";
-  form.dataset.editing = s.id;
+// Edit drawer
+function openEdit(idList) {
+  const ids = JSON.parse(idList);
+  const first = skins.find(s => s.id === ids[0]);
+  if (!first) return alert("Error: skins not found");
+
+  drawerTitle.textContent = `Edit ${ids.length} skins`;
+  form.dataset.editing = JSON.stringify(ids);
   btnDelete.style.display = "";
-  fType.value = s.knifeType;
-  fSkin.value = s.skinType;
-  fPrice.value = s.value;
-  fFloat.value = s.float;
-  fImage.value = s.image;
+
+  fType.value = first.type;
+  fSkin.value = first.name;
+  fFloat.value = normalizeFloat(first.float_value);
+  fLink.value = first.link;
+
+  fQuantityWrapper.style.display = "none"; // hide quantity
   showDrawer();
 }
 
-/* Delete (client-side) */
-function doDelete(id) {
-  if (!confirm("Tens a certeza que queres eliminar esta skin?")) return;
-  skins = skins.filter((s) => String(s.id) !== String(id));
-  applyFilters();
+// Delete skins
+async function doDelete(idList) {
+  const ids = JSON.parse(idList);
+  if (!confirm(`Delete ${ids.length} skin(s)?`)) return;
+
+  try {
+    for (const id of ids) await adminDeleteSkin(id);
+    skins = await getAllSkins();
+    populateFilters();
+    applyFilters();
+  } catch (err) {
+    console.error("Error deleting skins:", err);
+    alert("Error deleting skins: " + err.message);
+  }
 }
 
-/* Form submit (save new or edit) */
+// Form submit
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const knifeType = fType.value.trim();
-  const skinType  = fSkin.value.trim();
+  const type = capitalize(fType.value.trim());
+  const name = capitalize(fSkin.value.trim());
+  const quantity = Number(fQuantity.value) || 1;
+  const float_value = fFloat.value.trim();
+  const link = fLink.value.trim();
 
-  // Payload EXACTO, sem criar nenhum "name"
-  const payload = {
-    id: 0, // se o backend exigir
-    type: knifeType,
-    name: skinType,
-    float_value: fFloat.value.trim(), // varchar
-    value: Number(fPrice.value) || 0,
-    owner_id: 0,
-    link: fImage.value.trim(),
-    date_created: new Date().toISOString(),
-  };
+  const payload = { name, type, float_value, link, owner_id: 0, date_created: new Date().toISOString() };
+  const editing = form.dataset.editing;
+  const ids = editing ? JSON.parse(editing) : null;
 
   try {
-    await adminCreateSkin(payload);
-
-    skins = await getMySkins();
+    if (ids && ids.length) {
+      for (const id of ids) await adminEditSkin(id, payload);
+    } else {
+      for (let i = 0; i < quantity; i++) {
+        payload.id = 0;
+        await adminCreateSkin(payload);
+      }
+    }
+    skins = await getAllSkins();
+    populateFilters();
     applyFilters();
     hideDrawer();
-
   } catch (err) {
-    console.error("Erro ao criar skin:", err);
-    alert("Erro ao criar skin: " + err.message);
+    console.error("Error saving skin:", err);
+    alert("Error saving skin: " + err.message);
   }
 });
 
-
-
-/* Drawer buttons */
+// Drawer buttons
 btnAdd.addEventListener("click", openAdd);
 drawerClose.addEventListener("click", hideDrawer);
 btnCancel.addEventListener("click", hideDrawer);
 
-/* Delete from drawer (when editing) */
-btnDelete.addEventListener("click", () => {
-  const id = form.dataset.editing;
-  if (!id) return;
-  if (!confirm("Eliminar esta skin?")) return;
-  skins = skins.filter((s) => String(s.id) !== String(id));
-  hideDrawer();
-  applyFilters();
+// Delete button
+btnDelete.addEventListener("click", async () => {
+  const ids = JSON.parse(form.dataset.editing);
+  if (!ids || !ids.length) return;
+  if (!confirm(`Delete ${ids.length} skin(s)?`)) return;
+
+  try {
+    for (const id of ids) await adminDeleteSkin(id);
+    skins = await getAllSkins();
+    populateFilters();
+    applyFilters();
+    hideDrawer();
+  } catch (err) {
+    console.error("Error deleting skins:", err);
+    alert("Error deleting skins: " + err.message);
+  }
 });
 
-/* Delegated click handler for edit/delete buttons in cards */
+// Edit/Delete on cards
 container.addEventListener("click", (e) => {
   const btn = e.target.closest("button");
   if (!btn) return;
+
   const action = btn.dataset.action;
-  const id = btn.dataset.id;
+  const ids = btn.dataset.ids;
   if (!action) return;
 
-  if (action === "edit") {
-    openEdit(id);
-  } else if (action === "delete") {
-    doDelete(id);
-  }
+  if (action === "edit") openEdit(ids);
+  else if (action === "delete") doDelete(ids);
 });
 
-/* Filters */
-[searchInput, filterType, filterSkin, sortSelect].forEach(el =>
-  el.addEventListener("input", applyFilters)
-);
-
-/* Load initial skins */
-document.addEventListener("DOMContentLoaded", async () => {
-  try {
-    skins = await getMySkins();
-    applyFilters();
-  } catch (err) {
-    console.error("Erro ao buscar skins:", err);
-    empty.style.display = "block";
-    empty.textContent = "Não foi possível carregar as skins.";
-  }
-});
+// Filters
+[searchInput, filterType, filterSkin, sortSelect].forEach(el => el.addEventListener("input", applyFilters));
 
 resetBtn.addEventListener("click", () => {
   searchInput.value = "";

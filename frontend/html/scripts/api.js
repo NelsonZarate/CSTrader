@@ -118,13 +118,9 @@ export async function getMySkins() {
 
   const mapped = (data.skins || []).map(s => {
 
-    // 🔥 o backend manda:
-    // s.type → knife type
-    // s.name → skin type
     const knife = s.type || "";
     const skin  = s.name || ""; 
 
-    // Nome para exibir (não enviado ao backend)
     const displayName =
       `${knife.charAt(0).toUpperCase() + knife.slice(1)} ` +
       `${skin.charAt(0).toUpperCase() + skin.slice(1)}`;
@@ -192,7 +188,7 @@ export async function adminCreateSkin(skinData) {
 // PUT /admin/skin/edit/{skin_id} → Editar skin
 // -----------------------------
 export async function adminEditSkin(skinId, skinData) {
-  const response = await fetch(`${API_BASE_URL}/admin/skin/edit/${skinId}`, {
+  const response = await fetch(`${API_BASE_URL}/admin/skin/edit${skinId}`, {
     method: "PUT",
     headers: authHeaders(),
     body: JSON.stringify(skinData),
@@ -258,5 +254,33 @@ export async function createTrade(idUser, idSkin) {
     console.error("Erro ao enviar troca:", err);
     throw err;
   }
+}
+export async function getAllSkins() {
+  const response = await fetch(`${API_BASE_URL}/skins/all`, {
+    method: "GET",
+    headers: authHeaders(),
+  });
+
+  const data = await response.json();
+  if (!response.ok)
+    throw new Error(data.detail || "Erro ao obter todas as skins.");
+
+  return data;
+}
+
+export async function adminDeleteSkin(skinId) {
+  const response = await fetch(
+    `${API_BASE_URL}/admin/skin/delete/${skinId}`,
+    {
+      method: "GET",
+      headers: authHeaders(),
+    }
+  );
+
+  const data = await response.json();
+  if (!response.ok)
+    throw new Error(data.detail || "Erro ao eliminar skin.");
+
+  return data;
 }
 
