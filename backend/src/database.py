@@ -232,7 +232,13 @@ class DatabaseService:
                 amount= -marketplace_skin.value,
                 type="purchase"
             )
+            transaction_query_seller = Transaction(
+                user_id=seller.id,
+                amount= marketplace_skin.value,
+                type="sale"
+            )
             db.add(transaction_query_buyer)
+            db.add(transaction_query_seller)
             db.delete(marketplace_skin)
             db.commit()
         except Exception as e:
