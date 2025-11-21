@@ -1,6 +1,6 @@
 from backend.src.settings import settings
 from backend.src.models import User, skins, CreateSkinRequest,EditSkinRequest
-from backend.src.db_models import UserTable, SkinTable, Transaction
+from backend.src.db_models import UserTable, SkinTable, Transaction, Marketplace
 from sqlalchemy import create_engine, select, insert,text,distinct
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.exc import IntegrityError
@@ -161,6 +161,89 @@ class DatabaseService:
         db.commit()
         db.refresh(transaction)
         return transaction.id
+    
+    def get_marketplace_skins(self, db: Session) -> List[Dict]:
+        try:
+            query = select(SkinTable.id, SkinTable.name, SkinTable.type, SkinTable.float_value, SkinTable.date_created, SkinTable.link, SkinTable.owner_id, Marketplace.value
+                    ).join(
+                        Marketplace, Marketplace.skin_id == SkinTable.id
+                    )
+            result = db.execute(query)
+            skins_data = []
+            for row in result:
+                print(row)
+                skins_data.append({
+                    "id": row.id,
+                    "name": row.name,
+                    "type": row.type,
+                    "float_value": row.float_value,
+                    "date_created": row.date_created,
+                    "owner_id": row.owner_id,
+                    "link": row.link,
+                    "value": row.value
+                })
+            return skins_data
+        except Exception as e:
+            db.rollback()
+            raise ValueError(f"Error adding skin to marketplace : {str(e)}") from e
+    def add_marketplace_skin(self, skin_id: int, value: float,db : Session ) -> str :
+        try:
+            verify_existing_skin_query = select(Marketplace.id).where(Marketplace.skin_id == skin_id)
+            verify_existing_skin = db.execute(verify_existing_skin_query).scalar_one_or_none()
+            if verify_existing_skin:
+                raise ValueError(f"Skin with id: {skin_id} is already listed in the marketplace")
+            marketplace_skin = Marketplace(
+                skin_id=skin_id,
+                value=value
+            )
+            db.add(marketplace_skin)
+            db.commit()
+            db.refresh(marketplace_skin)
+            return str(marketplace_skin.id)
+        except Exception as e:
+            db.rollback()
+            raise ValueError(f"Error fetching marketplace skins : {str(e)}") from e
+    def buy_marketplace_skin(self, skin_id: int, buyer_id: int, db: Session) -> None:
+        try:
+            marketplace_skin_query = select(Marketplace).where(Marketplace.skin_id == skin_id)
+            marketplace_skin = db.execute(marketplace_skin_query).scalar_one_or_none()
+            if not marketplace_skin:
+                raise ValueError(f"Skin with id: {skin_id} is not listed in the marketplace")
+            skin_query = select(SkinTable).where(SkinTable.id == skin_id)
+            skin = db.execute(skin_query).scalar_one_or_none()
+            if not skin:
+                raise ValueError(f"Skin with id: {skin_id} does not exist")
+            buyer_query = select(UserTable).where(UserTable.id == buyer_id)
+            buyer = db.execute(buyer_query).scalar_one_or_none()
+            if not buyer:
+                raise ValueError(f"Buyer with id: {buyer_id} does not exist")
+            if buyer.funds < marketplace_skin.value:
+                raise ValueError("Buyer has insufficient funds")
+            seller_query = select(UserTable).where(UserTable.id == skin.owner_id)
+            seller = db.execute(seller_query).scalar_one_or_none()
+            if not seller:
+                raise ValueError(f"Seller with id: {skin.owner_id} does not exist")
+            buyer.funds -= marketplace_skin.value
+            seller.funds += marketplace_skin.value
+            skin.owner_id = buyer_id
+            
+            transaction_query_buyer = Transaction(
+                user_id=buyer_id,
+                amount= -marketplace_skin.value,
+                type="purchase"
+            )
+            transaction_query_seller = Transaction(
+                user_id=seller.id,
+                amount= marketplace_skin.value,
+                type="sale"
+            )
+            db.add(transaction_query_buyer)
+            db.add(transaction_query_seller)
+            db.delete(marketplace_skin)
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            raise ValueError(f"Error buying marketplace skin : {str(e)}") from e
 
 Database = DatabaseService
 

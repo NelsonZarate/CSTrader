@@ -122,7 +122,7 @@ export async function getMySkins() {
     // s.type → knife type
     // s.name → skin type
     const knife = s.type || "";
-    const skin  = s.name || ""; // <--- aqui está a diferença importante
+    const skin  = s.name || ""; 
 
     // Nome para exibir (não enviado ao backend)
     const displayName =
@@ -136,7 +136,7 @@ export async function getMySkins() {
       skinType: skin,          // <--- campo original (vem de s.name)
       float: s.float_value || "Unknown",
       value: s.value ?? 0,
-      image: s.link || "/path/to/placeholder.png",
+      link: s.link || "/path/to/placeholder.png"
     };
   });
 
@@ -207,8 +207,7 @@ export async function adminEditSkin(skinId, skinData) {
 // GET SKINS FOR MARKETPLACE
 // -----------------------------
 export async function getMarketplace() {
-  const response = await fetch(`../marketplace_teste.json`, {
-    /*Mudar Endpoint tomasssssss dps pedir ao nelson para criar o ENDPOINT*/
+  const response = await fetch(`${API_BASE_URL}/marketplace/skins`, {
     method: "GET",
     headers: authHeaders(),
   });

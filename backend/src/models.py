@@ -136,7 +136,6 @@ class SkinDisplay(BaseModel):
     link: Optional[str]
 
     class Config:
-        # Permite mapear os campos do objeto ORM (SkinTable)
         from_attributes = True
 
 class DepositRequest(BaseModel):
@@ -151,3 +150,13 @@ class DepositRequest(BaseModel):
         return v
 
 
+class MarketplaceSkinDisplay(BaseModel):
+    id: int
+    name: str
+    type: str
+    float_value: Optional[str]
+    owner_id: Optional[int]
+    link: Optional[str]
+    value: float
+    class Config:
+        from_attributes = True

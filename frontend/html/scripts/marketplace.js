@@ -15,15 +15,18 @@ const filterSkin = document.getElementById("filter-skin");
 const sortSelect = document.getElementById("sort");
 const resetBtn = document.getElementById("reset");
 
+function formatPrice(v) {
+  return "€" + v.toFixed(2);
+}
+
 let skins = [];
 
 function openMarketModal(skin) {
   const modal = document.getElementById("modal-market");
   if (!modal) return;
-
   modal.querySelector(".skin-name").innerText = skin.name;
   modal.querySelector(".skin-sub").innerText = skin.float;
-  modal.querySelector(".price").innerText = `Preço: €${skin.value.toFixed(2)}`;
+  modal.querySelector(".price").innerText = `Preço:${formatPrice(skin.value)}`;
 
   const img = modal.querySelector("#modalSkinImg");
   if (img) img.src = skin.image;
@@ -106,21 +109,21 @@ function renderList(list) {
     return;
   }
   empty.style.display = "none";
-
+  
   list.forEach((s, idx) => {
+    console.log(s);
     const card = document.createElement("div");
     card.className = "skin-card";
-
     card.innerHTML = `
       <div>
         <div class="skin-name">${s.name}</div>
       </div>
-      <div class="skin-thumb"><img src="${s.image}" alt="${s.name}"></div>
+      <div class="skin-thumb"><img src="${s.link}" alt="${s.name}"></div>
       <div>
-        <div class="skin-sub">${s.float}</div>
+        <div class="skin-sub">${s.float_value}</div>
       </div>
       <div class="skin-meta">
-        <div class="price">€${s.value.toFixed(2)}</div>
+        <div class="price">€${s.value}</div>
       </div>
       <div class="actions">
         <button class="btn btn-buynow">Buy Now</button>

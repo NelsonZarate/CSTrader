@@ -3,7 +3,7 @@ from fastapi import FastAPI,Body, Request, status, HTTPException
 from contextlib import asynccontextmanager
 from sqlalchemy.orm import Session
 from fastapi.params import Depends
-from backend.src.models import User, RegisterRequest, CreateSkinRequest,EditSkinRequest,SkinDisplay, DepositRequest
+from backend.src.models import User, RegisterRequest, CreateSkinRequest,EditSkinRequest,SkinDisplay, DepositRequest,MarketplaceSkinDisplay
 from backend.src.utils.validation_utils import hash_password,verify_password
 from backend.src.utils.security import get_current_user, get_current_admin_user
 from backend.src.utils.auth_utils import create_access_token
@@ -223,3 +223,65 @@ def deposit_funds(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao processar depósito: {str(e)}")
+   
+@app.get("/marketplace/skins", status_code=status.HTTP_200_OK, response_model=List[MarketplaceSkinDisplay])
+def get_marketplace_skins(
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+    ) -> Dict[str, List[str]]:
+    try:
+        skins = db_service.get_marketplace_skins(db)
+        print(skins)
+        return skins
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving skin types: {str(e)}") from e
+
+
+@app.post("/marketplace/add/skin", status_code=status.HTTP_201_CREATED, response_model=Dict[str,Union[str, str]])
+def marketplace_add_skin(
+    skin_id,value,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+    ) -> List[SkinDisplay]:
+    try:
+        skinId = db_service.add_marketplace_skin(skin_id,value, db)
+        return {"message": "Skin added successfully to the market", "skin_id": skinId}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating skin: {str(e)}") from e
+
+@app.delete("/marketplace/remove/skin/{marketplace_skin_id}", status_code=status.HTTP_200_OK, response_model=Dict[str, str])
+def marketplace_remove_skin(
+    marketplace_skin_id: int,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+    ) -> Dict[str, str]:
+    try:
+        db_service.remove_marketplace_skin(marketplace_skin_id, db)
+        return {"message": "Skin removed successfully from the market"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error removing skin: {str(e)}") from e
+
+@app.post("/marketplace/buy/skin/{marketplace_skin_id}", status_code=status.HTTP_200_OK, response_model=Dict[str, str])
+def marketplace_buy_skin(
+    marketplace_skin_id: int,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+    ) -> Dict[str, str]:
+    try:
+        user_email = current_user["sub"]
+        user = db_service.get_user_by_email(user_email, db)
+
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        db_service.buy_marketplace_skin(marketplace_skin_id, user.id, db)
+
+        return {"message": "Skin purchased successfully"}
+    except ValueError as e:
+        error_message = str(e)
+        if "not found" in error_message:
+            raise HTTPException(status_code=404, detail=error_message)
+        else:
+            raise HTTPException(status_code=400, detail=error_message)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error purchasing skin: {str(e)}") from e
