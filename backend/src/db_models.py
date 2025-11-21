@@ -33,4 +33,11 @@ class Transaction(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     amount = Column(Float, nullable=False)
     type = Column(String, nullable=False)
-    date = Column(DateTime, default=datetime.utcnow)
+    date = Column(DateTime, default=datetime.now(timezone.utc))
+
+class Marketplace(Base):
+    __tablename__ = "marketplace"
+
+    id = Column(Integer, primary_key=True,index=True)
+    skin_id = Column(Integer,ForeignKey('skins.id'), nullable=False)
+    value = Column(Float, nullable = False)
