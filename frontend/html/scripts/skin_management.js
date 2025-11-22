@@ -228,7 +228,7 @@ form.addEventListener("submit", async (e) => {
   const type = capitalize(fType.value.trim());
   const name = capitalize(fSkin.value.trim());
   const quantity = Number(fQuantity.value) || 1;
-  const float_value = fFloat.value.trim();
+  const float_value = fFloat.value.trim() || "Factory New";
   const link = fLink.value.trim();
 
   const payload = { name, type, float_value, link, owner_id: 0, date_created: new Date().toISOString() };
