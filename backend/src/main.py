@@ -3,7 +3,7 @@ from fastapi import FastAPI,Body, Request, status, HTTPException
 from contextlib import asynccontextmanager
 from sqlalchemy.orm import Session
 from fastapi.params import Depends
-from backend.src.models import User, RegisterRequest, CreateSkinRequest,EditSkinRequest,SkinDisplay, DepositRequest,MarketplaceSkinDisplay
+from backend.src.models import User, RegisterRequest, CreateSkinRequest,EditSkinRequest,SkinDisplay, DepositRequest,MarketplaceSkinDisplay,AddMarketplaceSkinRequest
 from backend.src.utils.validation_utils import hash_password,verify_password
 from backend.src.utils.security import get_current_user, get_current_admin_user
 from backend.src.utils.auth_utils import create_access_token
@@ -46,6 +46,8 @@ def register_user(
     try:
         user_id = db_service.create_user(new_user,db)
         return {"message": "User registered successfully", "user_id": user_id}   
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500,detail=f"Error creating user: {str(e)}") from e
 
@@ -86,6 +88,8 @@ def login_user(email: str = Body(..., embed=True), password: str = Body(..., emb
             return {"message": "Login successful", "user_id": str(user.id), "access_token":token, "token_type":"bearer", "role": user.role}
         else:
             raise HTTPException(status_code=401, detail="Invalid email or password")
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error during login: {str(e)}") from e
     
@@ -111,6 +115,8 @@ def get_my_skins(current_user: dict = Depends(get_current_user), db: Session = D
         
         skins = db_service.get_user_skins(user.id, db)
         return {"message": "User skins retrieved successfully", "skins": skins}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving user skins: {str(e)}") from e
     
@@ -120,6 +126,8 @@ def get_user_skins_by_id(user_id: int, db: Session = Depends(get_db)) -> Dict[st
     try:
         skins = db_service.get_user_skins(user_id, db)
         return {"message": "User skins retrieved successfully", "skins": skins}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving user skins: {str(e)}") from e
     
@@ -135,7 +143,7 @@ def create_skin_admin(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error creating skin: {str(e)}") from e
     
-@app.put("/admin/skin/edit{skin_id}", status_code=status.HTTP_200_OK, response_model=Dict[str, str])
+@app.put("/admin/skin/edit/{skin_id}", status_code=status.HTTP_200_OK, response_model=Dict[str, str])
 def edit_skin_admin(
     skin_id: int,
     skin_data: EditSkinRequest = Body(..., description="Skin data to be updated"),
@@ -169,7 +177,7 @@ def get_all_skins(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving skin types: {str(e)}") from e
     
-@app.get("/admin/skin/delete/{skin_id}", status_code=status.HTTP_200_OK, response_model=str)
+@app.delete("/admin/skin/delete/{skin_id}", status_code=status.HTTP_200_OK, response_model=str)
 def delete_skin_admin(
     skin_id: int,
     current_admin: dict = Depends(get_current_admin_user),
@@ -218,7 +226,6 @@ def deposit_funds(
             "message": "Depósito realizado com sucesso.",
             "new_balance": user.funds
         }
-
     except HTTPException:
         raise
     except Exception as e:
@@ -229,26 +236,30 @@ def get_marketplace_skins(
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
     ) -> Dict[str, List[str]]:
+    user_email = current_user['sub']
     try:
-        skins = db_service.get_marketplace_skins(db)
+        skins = db_service.get_marketplace_skins(user_email,db)
         print(skins)
         return skins
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving skin types: {str(e)}") from e
 
 
-@app.post("/marketplace/add/skin", status_code=status.HTTP_201_CREATED, response_model=Dict[str,Union[str, str]])
+@app.post("/marketplace/add/skin", status_code=status.HTTP_201_CREATED, response_model=Dict[str, Union[str, int]])
 def marketplace_add_skin(
-    skin_id,value,
+    skin_data: AddMarketplaceSkinRequest = Body(...),
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
     ) -> List[SkinDisplay]:
     try:
-        skinId = db_service.add_marketplace_skin(skin_id,value, db)
-        return {"message": "Skin added successfully to the market", "skin_id": skinId}
+        skinId = db_service.add_marketplace_skin(skin_data.skin_id,skin_data.value, db)
+        return {"message": "Skin added successfully to the market", "skin_id": int(skinId)}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error creating skin: {str(e)}") from e
-
+    
+    
 @app.delete("/marketplace/remove/skin/{marketplace_skin_id}", status_code=status.HTTP_200_OK, response_model=Dict[str, str])
 def marketplace_remove_skin(
     marketplace_skin_id: int,
@@ -258,9 +269,18 @@ def marketplace_remove_skin(
     try:
         db_service.remove_marketplace_skin(marketplace_skin_id, db)
         return {"message": "Skin removed successfully from the market"}
+    
+    except ValueError as e:
+        error_msg = str(e)
+        if "not found" in error_msg or "not listed" in error_msg:
+             raise HTTPException(status_code=404, detail=error_msg)
+        raise HTTPException(status_code=400, detail=error_msg)
+        
+    except HTTPException:
+        raise
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error removing skin: {str(e)}") from e
-
 @app.post("/marketplace/buy/skin/{marketplace_skin_id}", status_code=status.HTTP_200_OK, response_model=Dict[str, str])
 def marketplace_buy_skin(
     marketplace_skin_id: int,
@@ -277,6 +297,8 @@ def marketplace_buy_skin(
         db_service.buy_marketplace_skin(marketplace_skin_id, user.id, db)
 
         return {"message": "Skin purchased successfully"}
+    except HTTPException:
+        raise
     except ValueError as e:
         error_message = str(e)
         if "not found" in error_message:

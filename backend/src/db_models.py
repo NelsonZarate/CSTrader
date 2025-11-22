@@ -1,8 +1,8 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime,ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
+import sqlalchemy.orm 
 from datetime import datetime,timezone
 
-Base = declarative_base()
+Base = sqlalchemy.orm.declarative_base()
 
 class UserTable(Base):
     __tablename__ = "users"

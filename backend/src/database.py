@@ -77,8 +77,9 @@ class DatabaseService:
                 })
             return users_data
     def get_user_skins(self,user_id:int,db: Session) -> List[Dict]:
-            query = select(SkinTable).where(SkinTable.owner_id == user_id)
-            db_skins = db.scalars(query).all()
+            query_skins = select(SkinTable).outerjoin(Marketplace, Marketplace.skin_id == SkinTable.id
+            ).where(SkinTable.owner_id == user_id,Marketplace.skin_id == None)
+            db_skins = db.scalars(query_skins).all()
             skins_data = []
             for skin in db_skins:
                 skins_data.append({
@@ -162,16 +163,17 @@ class DatabaseService:
         db.refresh(transaction)
         return transaction.id
     
-    def get_marketplace_skins(self, db: Session) -> List[Dict]:
+    def get_marketplace_skins(self, user_email, db: Session) -> List[Dict]:
         try:
+            query = select(UserTable.id).where(UserTable.email == user_email)
+            user_id = db.execute(query).scalar_one_or_none()
             query = select(SkinTable.id, SkinTable.name, SkinTable.type, SkinTable.float_value, SkinTable.date_created, SkinTable.link, SkinTable.owner_id, Marketplace.value
                     ).join(
                         Marketplace, Marketplace.skin_id == SkinTable.id
-                    )
+                    ).where(SkinTable.owner_id != user_id)
             result = db.execute(query)
             skins_data = []
             for row in result:
-                print(row)
                 skins_data.append({
                     "id": row.id,
                     "name": row.name,
@@ -186,7 +188,7 @@ class DatabaseService:
         except Exception as e:
             db.rollback()
             raise ValueError(f"Error adding skin to marketplace : {str(e)}") from e
-    def add_marketplace_skin(self, skin_id: int, value: float,db : Session ) -> str :
+    def add_marketplace_skin(self, skin_id: int, value: float, db : Session ) -> str :
         try:
             verify_existing_skin_query = select(Marketplace.id).where(Marketplace.skin_id == skin_id)
             verify_existing_skin = db.execute(verify_existing_skin_query).scalar_one_or_none()
