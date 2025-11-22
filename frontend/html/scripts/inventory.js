@@ -1,4 +1,4 @@
-import { getMySkins, getToken, getUserByEmail } from "./api.js";
+import { getMySkins, getToken, getUserByEmail,marketplaceAddSkin } from "./api.js";
 import "./dropdown_style.js";
 import "./main.js";
 
@@ -22,25 +22,76 @@ function renderList(list) {
 
   list.forEach((s, idx) => {
     const card = document.createElement("div");
-    card.className = "skin-card";
+    card.className = "skin-card flip-card";
 
-    card.innerHTML = `
-        <div>
-          <div class="skin-name">${s.name}</div>
-        </div>
+    // flip inner container
+    const inner = document.createElement("div");
+    inner.className = "flip-inner";
+
+    // FRONT
+    const front = document.createElement("div");
+    front.className = "flip-front";
+    front.innerHTML = `
       <div class="skin-thumb"><img src="${s.link}" alt="${s.name}"></div>
-      <div>
+      <div class="skin-info">
+        <div class="skin-name">${s.name}</div>
         <div class="skin-sub">${s.float}</div>
       </div>
-      <div class="actions">
-        <button class="btn btn-buynow">Sell Now</button>
-      </div>
+      <button class="btn btn-buynow">Sell Now</button>
     `;
 
+    // BACK
+    const back = document.createElement("div");
+    back.className = "flip-back";
+    back.innerHTML = `
+      <div class="skin-name">${s.name}</div>
+      <div class="skin-sub">Type: ${s.knifeType} | Finish: ${s.skinType} | Float: ${s.float}</div>
+      <form class="sell-form">
+        <input type="number" min="0" placeholder="Enter price" class="sell-value" required />
+        <button type="submit" class="btn btn-sell">Sell</button>
+        <button type="button" class="btn btn-cancel-back">Cancel</button>
+      </form>
+    `;
+
+    inner.appendChild(front);
+    inner.appendChild(back);
+    card.appendChild(inner);
     container.appendChild(card);
+
     setTimeout(() => card.classList.add("visible"), 70 * idx);
+
+    // Evento flip
+    const sellNowBtn = front.querySelector(".btn-buynow");
+    const cancelBtn = back.querySelector(".btn-cancel-back");
+
+    sellNowBtn.addEventListener("click", () => card.classList.add("flipped"));
+    cancelBtn.addEventListener("click", () => card.classList.remove("flipped"));
+
+    // Evento do form de venda
+    const form = back.querySelector(".sell-form");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const valueInput = back.querySelector(".sell-value");
+      const price = parseFloat(valueInput.value);
+      if (isNaN(price) || price <= 0) {
+        alert("Please enter a valid price.");
+        return;
+      }
+      const confirmSell = confirm(`Confirm sale of ${s.name} for ${price}?`);
+      if (!confirmSell) return;
+
+      try {
+        await marketplaceAddSkin({ id: s.id, value: price });
+        alert("Skin listed successfully!");
+        card.classList.remove("flipped");
+      } catch (err) {
+        console.error(err);
+        alert("Failed to list skin. See console for details.");
+      }
+    });
   });
 }
+
 
 function refreshCustomSelect(select) {
   const next = select.nextElementSibling;
@@ -54,6 +105,7 @@ function refreshCustomSelect(select) {
     new CustomEvent("force-enhance-select", { detail: select })
   );
 }
+
 
 
 
@@ -201,3 +253,4 @@ resetBtn.addEventListener("click", () => {
 
   applyFilters();
 });
+
