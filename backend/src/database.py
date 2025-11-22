@@ -246,7 +246,17 @@ class DatabaseService:
         except Exception as e:
             db.rollback()
             raise ValueError(f"Error buying marketplace skin : {str(e)}") from e
-
+    def remove_marketplace_skin(self, skin_id: int, db: Session) -> None:
+        try:
+            marketplace_skin_query = select(Marketplace).where(Marketplace.skin_id == skin_id)
+            marketplace_skin = db.execute(marketplace_skin_query).scalar_one_or_none()
+            if not marketplace_skin:
+                raise ValueError(f"Skin with id: {skin_id} is not listed in the marketplace")
+            db.delete(marketplace_skin)
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            raise ValueError(f"Error removing skin from marketplace : {str(e)}") from e
 Database = DatabaseService
 
 def get_db():
