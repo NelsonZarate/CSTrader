@@ -107,11 +107,11 @@ class CreateSkinRequest(BaseModel):
     )
     
 class EditSkinRequest(BaseModel):
-    name: Optional[str] = Field(..., description="The name of the skin example Dopler")
-    type: Optional[str] = Field(..., description="The type of the knife example (Bayonet, Karambit)")
-    float_value: Optional[str] = Field(..., alias="float", description="The float value of the skin Factory new, Minimal Wear, Field-Tested, Well-Worn, Battle-Scarred")
-    owner_id: Optional[int] = Field(..., description="The ID of the owner user") 
-    link: Optional[str] = Field(..., description="The link to the skin image ")   
+    name: Optional[str] = Field(None, description="The name of the skin example Dopler")
+    type: Optional[str] = Field(None, description="The type of the knife example (Bayonet, Karambit)")
+    float_value: Optional[str] = Field(None, alias="float", description="The float value of the skin Factory new, Minimal Wear, Field-Tested, Well-Worn, Battle-Scarred")
+    owner_id: Optional[int] = Field(None, description="The ID of the owner user") 
+    link: Optional[str] = Field(None, description="The link to the skin image ")   
     model_config = ConfigDict(
         from_attributes=True,
         populate_by_name=True, 
@@ -135,9 +135,9 @@ class SkinDisplay(BaseModel):
     owner_id: Optional[int]
     link: Optional[str]
 
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
-
+    )
 class DepositRequest(BaseModel):
     amount: float = Field(..., description="Amount to deposit")
 
@@ -158,5 +158,6 @@ class MarketplaceSkinDisplay(BaseModel):
     owner_id: Optional[int]
     link: Optional[str]
     value: float
-    class Config:
+    model_config = ConfigDict(
         from_attributes = True
+    )
