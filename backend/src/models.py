@@ -161,3 +161,21 @@ class MarketplaceSkinDisplay(BaseModel):
     model_config = ConfigDict(
         from_attributes = True
     )
+
+class AddMarketplaceSkinRequest(BaseModel):
+    skin_id: int = Field(..., description="ID of the skin to be listed")
+    value: float = Field(..., description="Listing price for the skin")
+
+    @field_validator("value")
+    def validate_value(cls, v):
+        if v <= 0:
+            raise ValueError("O valor deve ser maior que zero.")
+        return v
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "skin_id": 1,
+                "value": 150.0
+            }
+        }
+    )
