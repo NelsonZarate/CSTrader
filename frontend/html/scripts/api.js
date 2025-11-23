@@ -1,4 +1,5 @@
 const API_BASE_URL = "http://localhost:8000";
+import { showSpinner, hideSpinner } from "./spinner.js";
 
 // -----------------------------
 // TOKEN
@@ -119,7 +120,7 @@ export async function getMySkins() {
   const mapped = (data.skins || []).map(s => {
 
     const knife = s.type || "";
-    const skin  = s.name || ""; 
+    const skin = s.name || "";
 
     const displayName =
       `${knife.charAt(0).toUpperCase() + knife.slice(1)} ` +
@@ -159,27 +160,32 @@ export async function getUserSkinsById(userId) {
 // POST /admin/skins → Criar skin (ADMIN)
 // -----------------------------
 export async function adminCreateSkin(skinData) {
-  const payload = {
-    id: 0, // ID fixo como pediste
-    name: skinData.name,
-    type: skinData.type,
-    skin_type: skinData.skin_type,
-    float_value: skinData.float_value,
-    value: skinData.value,
-    link: skinData.link,
-    date_created: new Date().toISOString(), // timestamp no formato ISO
-  };
+  showSpinner();
+  try {
+    const payload = {
+      id: 0,
+      name: skinData.name,
+      type: skinData.type,
+      skin_type: skinData.skin_type,
+      float_value: skinData.float_value,
+      value: skinData.value,
+      link: skinData.link,
+      date_created: new Date().toISOString(),
+    };
 
-  const response = await fetch(`${API_BASE_URL}/admin/skins`, {
-    method: "POST",
-    headers: authHeaders(),
-    body: JSON.stringify(payload),
-  });
+    const response = await fetch(`${API_BASE_URL}/admin/skins`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify(payload),
+    });
 
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.detail || "Erro ao criar skin.");
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.detail || "Erro ao criar skin.");
 
-  return data;
+    return data;
+  } finally {
+    hideSpinner();
+  }
 }
 
 
@@ -188,15 +194,20 @@ export async function adminCreateSkin(skinData) {
 // PUT /admin/skin/edit/{skin_id} → Editar skin
 // -----------------------------
 export async function adminEditSkin(skinId, skinData) {
-  const response = await fetch(`${API_BASE_URL}/admin/skin/edit${skinId}`, {
-    method: "PUT",
-    headers: authHeaders(),
-    body: JSON.stringify(skinData),
-  });
+  showSpinner();
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/skin/edit/${skinId}`, {
+      method: "PUT",
+      headers: authHeaders(),
+      body: JSON.stringify(skinData),
+    });
 
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.detail || "Erro ao editar skin.");
-  return data;
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.detail || "Erro ao editar skin.");
+    return data;
+  } finally {
+    hideSpinner();
+  }
 }
 
 // -----------------------------
@@ -269,19 +280,24 @@ export async function getAllSkins() {
 }
 
 export async function adminDeleteSkin(skinId) {
-  const response = await fetch(
-    `${API_BASE_URL}/admin/skin/delete/${skinId}`,
-    {
-      method: "GET",
-      headers: authHeaders(),
-    }
-  );
+  showSpinner();
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/admin/skin/delete/${skinId}`,
+      {
+        method: "GET",
+        headers: authHeaders(),
+      }
+    );
 
-  const data = await response.json();
-  if (!response.ok)
-    throw new Error(data.detail || "Erro ao eliminar skin.");
-
+    const data = await response.json();
+    if (!response.ok)
+      throw new Error(data.detail || "Erro ao eliminar skin.");
+  
   return data;
+  } finally {
+    hideSpinner();
+  }
 }
 
 // -----------------------------
@@ -308,4 +324,24 @@ export async function marketplaceAddSkin({ id, value }) {
   if (!response.ok) throw new Error(data.detail || "Erro ao adicionar skin ao marketplace.");
 
   return data;
+}
+
+export async function addFunds({ amount }) {
+  if (amount == null || isNaN(amount) || amount <= 0) {
+    throw new Error("Amount must be a positive number.");
+  }
+
+  console.log("Depositing funds:", amount);
+
+    const response = await fetch(`${API_BASE_URL}/wallet/deposit`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ amount }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.detail || "Error while depositing funds.");
+
+    return data;
+
 }

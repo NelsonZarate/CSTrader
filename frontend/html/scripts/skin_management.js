@@ -41,6 +41,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
+
 function refreshCustomSelect(select) {
   const next = select.nextElementSibling;
   if (next && next.classList.contains("custom-select")) next.remove();
@@ -161,8 +162,6 @@ function applyFilters() {
   switch (sortSelect.value) {
     case "name-asc": out.sort((a, b) => a.name.localeCompare(b.name)); break;
     case "name-desc": out.sort((a, b) => b.name.localeCompare(a.name)); break;
-    case "price-asc": out.sort((a, b) => a.value - b.value); break;
-    case "price-desc": out.sort((a, b) => b.value - a.value); break;
     case "float-asc": out.sort((a, b) => (floatOrder[normalizeFloat(a.float_value)] || 99) - (floatOrder[normalizeFloat(b.float_value)] || 99)); break;
     case "float-desc": out.sort((a, b) => (floatOrder[normalizeFloat(b.float_value)] || 99) - (floatOrder[normalizeFloat(a.float_value)] || 99)); break;
   }
@@ -182,7 +181,8 @@ function openAdd() {
   fFloat.value = "";
   fLink.value = "";
 
-  fQuantityWrapper.style.display = "flex"; // show quantity
+  fQuantityWrapper.style.display = "flex";
+  fQuantity.setAttribute("required", "");
   showDrawer();
 }
 
@@ -202,6 +202,7 @@ function openEdit(idList) {
   fLink.value = first.link;
 
   fQuantityWrapper.style.display = "none"; // hide quantity
+  fQuantity.removeAttribute("required");    // REMOVE required
   showDrawer();
 }
 

@@ -83,7 +83,7 @@ function renderList(list) {
       try {
         await marketplaceAddSkin({ id: s.id, value: price });
         alert("Skin listed successfully!");
-        card.classList.remove("flipped");
+        location.reload();
       } catch (err) {
         console.error(err);
         alert("Failed to list skin. See console for details.");
@@ -129,7 +129,7 @@ function populateDropdowns(skins) {
     filterSkin.appendChild(opt);
   });
 
-  // 🔥 IMPORTANTE (tal como faz o skin_management)
+
   refreshCustomSelect(filterType);
   refreshCustomSelect(filterSkin);
 }
@@ -175,12 +175,6 @@ function applyFilters() {
       break;
     case "name-desc":
       out.sort((a, b) => b.name.localeCompare(a.name));
-      break;
-    case "price-asc":
-      out.sort((a, b) => a.value - b.value);
-      break;
-    case "price-desc":
-      out.sort((a, b) => b.value - a.value);
       break;
     case "float-asc":
       out.forEach((s) => (s.float = normalizeFloat(s.float)));

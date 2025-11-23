@@ -45,6 +45,19 @@ export async function updateNavbarState() {
         window.location.replace("../login/index.html#login");
       });
     }
+
+
+    const addIcon = document.querySelector(".add-icon");
+    if (addIcon) {
+
+      addIcon.style.cursor = "pointer";
+
+      addIcon.addEventListener("click", () => {
+
+        window.location.href = "../deposit_funds/index.html";
+      });
+    }
+
   } else {
     if (loggedOut) loggedOut.style.display = "flex";
     if (loggedIn) loggedIn.style.display = "none";
