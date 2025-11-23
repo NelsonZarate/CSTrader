@@ -124,7 +124,8 @@ function setupModalEvents() {
             cancelButton: "btn btn-secondary",
           },
         }).then((result) => {
-          if (result.isConfirmed) window.location.replace = "#";
+          if (result.isConfirmed)
+            window.location.replace = "../wallet/index.html";
         });
       }
     }
