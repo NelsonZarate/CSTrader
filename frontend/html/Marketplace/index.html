@@ -10,7 +10,6 @@
       rel="stylesheet"
     />
   </head>
-
   <body>
     <header>
       <div id="navbar"></div>
@@ -52,17 +51,22 @@
             <option value="float-asc">Lowest Float</option>
             <option value="float-desc">Highest Float</option>
           </select>
+          <button id="view_my_skins" class="view_my_skins">
+            View my skins
+          </button>
           <button id="reset" class="reset">Reset</button>
         </div>
       </section>
 
+      <div id="user-marketplace-container"></div>
+
       <section id="skin_display" class="inventory-grid"></section>
+
       <div id="empty" class="empty" style="display: none">
         No skins match your filters.
       </div>
 
-      <div class="modal-market" id="modal-market">
-
+      <div class="modal-market" id="modal-market"></div>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
