@@ -102,7 +102,6 @@ function setupModalEvents() {
 
       if (user.funds >= skin.value) {
         await createTrade(user.id, skin.id);
-        modal.style.display = "none";
         Swal.fire({
           title: "Transaction Completed!",
           text: `Congratulations! The item ${skin.name} has been added to your collection.`,
@@ -110,6 +109,8 @@ function setupModalEvents() {
           timer: 2000,
           showConfirmButton: false,
           customClass: { popup: "elegant-success-popup" },
+        }).then(() => {
+          window.location.replace("../inventory/index.html");
         });
       } else {
         Swal.fire({
@@ -123,14 +124,12 @@ function setupModalEvents() {
             cancelButton: "btn btn-secondary",
           },
         }).then((result) => {
-          if (result.isConfirmed)
-            window.location.replace = "../inventory/index.html";
+          if (result.isConfirmed) window.location.replace = "#";
         });
       }
     }
   });
 }
-
 
 function renderList(list) {
   container.innerHTML = "";
@@ -180,7 +179,6 @@ function renderList(list) {
     setTimeout(() => card.classList.add("visible"), 70 * idx);
   });
 }
-
 
 function handleBuyClick(skin) {
   const token = getToken();
@@ -297,7 +295,6 @@ function applyFilters() {
   renderList(out);
 }
 
-
 [searchInput, filterType, filterSkin, sortSelect].forEach((el) =>
   el.addEventListener("input", applyFilters)
 );
@@ -309,7 +306,6 @@ resetBtn.addEventListener("click", () => {
   sortSelect.value = "default";
   applyFilters();
 });
-
 
 viewMySkinsBtn.addEventListener("click", async () => {
   viewingMySkins = !viewingMySkins;
@@ -324,10 +320,9 @@ viewMySkinsBtn.addEventListener("click", async () => {
   }
 });
 
-
 document.addEventListener("DOMContentLoaded", async () => {
   skins = await getMarketplace();
-  populateDropdowns(skins); 
+  populateDropdowns(skins);
   applyFilters();
   setupModalEvents();
 });
