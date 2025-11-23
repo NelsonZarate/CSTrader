@@ -296,7 +296,7 @@ export async function removeSkin(skinId) {
 export async function createTrade(idUser, idSkin) {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/marketplace/buy/skins/${skinId}`,
+      `${API_BASE_URL}/marketplace/buy/skin/${idSkin}`,
       {
         method: "POST",
         headers: authHeaders(),
@@ -316,6 +316,7 @@ export async function createTrade(idUser, idSkin) {
     throw err;
   }
 }
+
 export async function getAllSkins() {
   const response = await fetch(`${API_BASE_URL}/skins/all`, {
     method: "GET",
