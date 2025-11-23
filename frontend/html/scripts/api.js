@@ -115,10 +115,7 @@ export async function getMySkins() {
   const data = await response.json();
   if (!response.ok) throw new Error(data.detail || "Erro ao obter skins.");
 
-  console.log("Raw skins data:", data.skins);
-
-  const mapped = (data.skins || []).map(s => {
-
+  const mapped = (data.skins || []).map((s) => {
     const knife = s.type || "";
     const skin = s.name || "";
 
@@ -128,19 +125,17 @@ export async function getMySkins() {
 
     return {
       id: s.id,
-      name: displayName,       // <--- só para mostrar no front-end
-      knifeType: knife,        // <--- campo original
-      skinType: skin,          // <--- campo original (vem de s.name)
+      name: displayName, // <--- só para mostrar no front-end
+      knifeType: knife, // <--- campo original
+      skinType: skin, // <--- campo original (vem de s.name)
       float: s.float_value || "Unknown",
       value: s.value ?? 0,
-      link: s.link || "/path/to/placeholder.png"
+      link: s.link || "/path/to/placeholder.png",
     };
   });
 
   return mapped;
 }
-
-
 
 // -----------------------------
 // /user/skins/{user_id} GET Skins por ID
@@ -188,8 +183,6 @@ export async function adminCreateSkin(skinData) {
   }
 }
 
-
-
 // -----------------------------
 // PUT /admin/skin/edit/{skin_id} → Editar skin
 // -----------------------------
@@ -220,9 +213,29 @@ export async function getMarketplace() {
   });
 
   const data = await response.json();
-  if (!response.ok)
-    throw new Error(data.detail || "Falha ao buscar skins do marketplace.");
-  return data;
+  if (!response.ok) throw new Error(data.detail || "Erro ao obter skins.");
+
+  const mapped = (data || []).map((s) => {
+    const knife = s.type || "";
+    const skin = s.name || "";
+
+    const displayName =
+      `${knife.charAt(0).toUpperCase() + knife.slice(1)} ` +
+      `${skin.charAt(0).toUpperCase() + skin.slice(1)}`;
+
+    return {
+      id: s.id,
+      name: displayName,
+      knifeType: knife,
+      skinType: skin,
+      float: s.float_value || "Unknown",
+      value: s.value ?? 0,
+      link: s.link || "/path/to/placeholder.png",
+    };
+  });
+
+  console.log(mapped);
+  return mapped;
 }
 
 // -----------------------------
@@ -244,18 +257,66 @@ export async function buySkin(skinId) {
 }
 
 // -----------------------------
+// GET Skins do Utilizador no Marketplace
+// -----------------------------
+export async function getUserMarketplace() {
+  const token = getToken();
+  if (!token) throw new Error("Token inválido.");
+
+  const payload = JSON.parse(atob(token.split(".")[1]));
+  const email = payload.sub;
+
+  const user = await getUserByEmail(email);
+  if (!user) throw new Error("Utilizador não encontrado.");
+
+  const response = await fetch(`${API_BASE_URL}/marketplace/skins`, {
+    method: "GET",
+    headers: authHeaders(),
+  });
+
+  const allSkins = await response.json();
+  if (!response.ok)
+    throw new Error(allSkins.detail || "Erro ao obter marketplace.");
+
+  const userSkins = allSkins.filter((skin) => skin.owner_id === user.id);
+
+  return userSkins;
+}
+
+// -----------------------------
+// Remover SKIN do marketplace
+// -----------------------------
+export async function removeSkin(skinId) {
+  const response = await fetch(
+    `${API_BASE_URL}/marketplace/remove/skin/${skinId}`,
+    {
+      method: "DELETE",
+      headers: authHeaders(),
+    }
+  );
+
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.detail || "Erro ao eliminar skin.");
+
+  return data;
+}
+
+// -----------------------------
 // POST /trocas → Criar transação de compra
 // -----------------------------
 export async function createTrade(idUser, idSkin) {
   try {
-    const response = await fetch(`${API_BASE_URL}/trocas`, {
-      method: "POST",
-      headers: authHeaders(),
-      body: JSON.stringify({
-        id_user: idUser,
-        id_skin: idSkin,
-      }),
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/marketplace/buy/skin/${idSkin}`,
+      {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({
+          id_user: idUser,
+          id_skin: idSkin,
+        }),
+      }
+    );
 
     const data = await response.json();
     if (!response.ok) throw new Error(data.detail || "Erro ao criar troca.");
@@ -266,6 +327,7 @@ export async function createTrade(idUser, idSkin) {
     throw err;
   }
 }
+
 export async function getAllSkins() {
   const response = await fetch(`${API_BASE_URL}/skins/all`, {
     method: "GET",
@@ -282,19 +344,15 @@ export async function getAllSkins() {
 export async function adminDeleteSkin(skinId) {
   showSpinner();
   try {
-    const response = await fetch(
-      `${API_BASE_URL}/admin/skin/delete/${skinId}`,
-      {
-        method: "GET",
-        headers: authHeaders(),
-      }
-    );
+    const response = await fetch(`${API_BASE_URL}/admin/skin/delete/${skinId}`, {
+      method: "GET",
+      headers: authHeaders(),
+    });
 
     const data = await response.json();
-    if (!response.ok)
-      throw new Error(data.detail || "Erro ao eliminar skin.");
-  
-  return data;
+    if (!response.ok) throw new Error(data.detail || "Erro ao eliminar skin.");
+
+    return data;
   } finally {
     hideSpinner();
   }
