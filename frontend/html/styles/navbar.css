@@ -114,3 +114,30 @@
     transform: scaleX(1);
     transform-origin: left;
 }
+
+.add-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 24px;
+    height: 22px;
+
+    border-radius: 50%;
+    background: var(--accent-color);
+    color: white;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1;       
+    
+    padding-bottom: 2px;     
+    
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+}
+
+.add-icon:hover {
+    transform: scale(1.1);
+}
+

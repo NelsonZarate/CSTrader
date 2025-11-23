@@ -538,3 +538,29 @@ button:active,
   to { opacity: 1; transform: translateY(0); }
 }
 
+
+/* ---- SPINNER FIXO E ESTILIZADO ---- */
+.spinner {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 48px;
+  height: 48px;
+  margin: -24px 0 0 -24px;
+  border-radius: 50%;
+  border: 4px solid rgba(255,255,255,0.15);
+  border-top-color: var(--accent-color);
+  animation: spin 0.75s linear infinite;
+  z-index: 9999;
+}
+
+/* escondida por default */
+.spinner.hidden {
+  display: none;
+}
+
+/* animação suave e centrada */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
