@@ -257,6 +257,35 @@ class DatabaseService:
         except Exception as e:
             db.rollback()
             raise ValueError(f"Error removing skin from marketplace : {str(e)}") from e
+        
+    def get_user_marketplace_skins(self, user_email: str, db: Session) -> List[Dict]:
+        try:
+            query_user = select(UserTable.id).where(UserTable.email == user_email)
+            user_id = db.execute(query_user).scalar_one_or_none()
+            if user_id is None:
+                raise ValueError(f"User with email: {user_email} does not exist")
+            
+            query = select(SkinTable.id, SkinTable.name, SkinTable.type, SkinTable.float_value, SkinTable.date_created, SkinTable.link, SkinTable.owner_id, Marketplace.value
+                    ).join(
+                        Marketplace, Marketplace.skin_id == SkinTable.id
+                    ).where(SkinTable.owner_id == user_id)
+            result = db.execute(query)
+            skins_data = []
+            for row in result:
+                skins_data.append({
+                    "id": row.id,
+                    "name": row.name,
+                    "type": row.type,
+                    "float_value": row.float_value,
+                    "date_created": row.date_created,
+                    "owner_id": row.owner_id,
+                    "link": row.link,
+                    "value": row.value
+                })
+            return skins_data
+        except Exception as e:
+            db.rollback()
+            raise ValueError(f"Error fetching user's marketplace skins : {str(e)}") from e
 Database = DatabaseService
 
 def get_db():

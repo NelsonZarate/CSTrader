@@ -307,3 +307,15 @@ def marketplace_buy_skin(
             raise HTTPException(status_code=400, detail=error_message)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error purchasing skin: {str(e)}") from e
+    
+@app.get("/marketplace/user/skins", status_code=status.HTTP_200_OK, response_model=List[MarketplaceSkinDisplay])
+def get_my_marketplace_skins(
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+    ) -> Dict[str, List[str]]:
+    user_email = current_user['sub']
+    try:
+        skins = db_service.get_user_marketplace_skins(user_email,db)
+        return skins
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving skin types: {str(e)}") from e
