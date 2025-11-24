@@ -32,7 +32,7 @@ valueInput.setAttribute("max", "10000");
 
 valueInput.addEventListener("input", () => {
     const amount = parseFloat(valueInput.value);
-    if (isNaN(amount) || amount <= 0 || amount > 100000) {
+    if (isNaN(amount) || amount <= 0 || amount >= 10000) {
         valueError.textContent = "Please enter a valid deposit amount between 1 and 10,000.";
     } else {
         valueError.textContent = "";
