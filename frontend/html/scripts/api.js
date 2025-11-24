@@ -1,5 +1,5 @@
 const API_BASE_URL = "http://localhost:8000";
-import { showSpinner, hideSpinner } from "./spinner.js";
+import { showSpinner, hideSpinner } from "./spinner.js"; 
 
 // -----------------------------
 // TOKEN
@@ -393,15 +393,28 @@ export async function addFunds({ amount }) {
 
   console.log("Depositing funds:", amount);
 
-    const response = await fetch(`${API_BASE_URL}/wallet/deposit`, {
-      method: "POST",
-      headers: authHeaders(),
-      body: JSON.stringify({ amount }),
-    });
+  const response = await fetch(`${API_BASE_URL}/wallet/deposit`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ amount }),
+  });
 
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.detail || "Error while depositing funds.");
+  const data = await response.json();
+  if (!response.ok)
+    throw new Error(data.detail || "Error while depositing funds.");
 
-    return data;
+  return data;
+}
 
+export async function getMyMarketplace() {
+  const response = await fetch(`${API_BASE_URL}/marketplace/user/skins`, {
+    method: "GET",
+    headers: authHeaders(),
+  });
+
+  const data = await response.json();
+  if (!response.ok)
+    throw new Error(data.detail || "Erro ao obter todas as skins.");
+
+  return data;
 }
