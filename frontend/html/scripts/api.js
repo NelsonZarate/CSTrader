@@ -344,10 +344,13 @@ export async function getAllSkins() {
 export async function adminDeleteSkin(skinId) {
   showSpinner();
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/skin/delete/${skinId}`, {
-      method: "DELETE",
-      headers: authHeaders(),
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/admin/skin/delete/${skinId}`,
+      {
+        method: "DELETE",
+        headers: authHeaders(),
+      }
+    );
 
     const data = await response.json();
     if (!response.ok) throw new Error(data.detail || "Erro ao eliminar skin.");
@@ -393,26 +396,40 @@ export async function addFunds({ amount }) {
 
   console.log("Depositing funds:", amount);
 
-    const response = await fetch(`${API_BASE_URL}/wallet/deposit`, {
-      method: "POST",
-      headers: authHeaders(),
-      body: JSON.stringify({ amount }),
-    });
+  const response = await fetch(`${API_BASE_URL}/wallet/deposit`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ amount }),
+  });
 
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.detail || "Error while depositing funds.");
+  const data = await response.json();
+  if (!response.ok)
+    throw new Error(data.detail || "Error while depositing funds.");
 
-    return data;
-
+  return data;
 }
 
 export async function transactionHistory() {
-    const response = await fetch(`${API_BASE_URL}/transactions/history`, {
-      method: "GET",
-      headers: authHeaders(),
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.detail || "Error while fetching transaction history.");
+  const response = await fetch(`${API_BASE_URL}/transactions/history`, {
+    method: "GET",
+    headers: authHeaders(),
+  });
+  const data = await response.json();
+  if (!response.ok)
+    throw new Error(data.detail || "Error while fetching transaction history.");
 
-    return data;
+  return data;
+}
+
+export async function getMyMarketplace() {
+  const response = await fetch(`${API_BASE_URL}/marketplace/user/skins`, {
+    method: "GET",
+    headers: authHeaders(),
+  });
+
+  const data = await response.json();
+  if (!response.ok)
+    throw new Error(data.detail || "Erro ao obter todas as skins.");
+
+  return data;
 }
