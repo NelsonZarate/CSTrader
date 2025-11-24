@@ -345,7 +345,7 @@ export async function adminDeleteSkin(skinId) {
   showSpinner();
   try {
     const response = await fetch(`${API_BASE_URL}/admin/skin/delete/${skinId}`, {
-      method: "GET",
+      method: "DELETE",
       headers: authHeaders(),
     });
 

@@ -39,5 +39,5 @@ class Marketplace(Base):
     __tablename__ = "marketplace"
 
     id = Column(Integer, primary_key=True,index=True)
-    skin_id = Column(Integer,ForeignKey('skins.id'), nullable=False)
+    skin_id = Column(Integer,ForeignKey('skins.id', ondelete="CASCADE"), nullable=False)
     value = Column(Float, nullable = False)
