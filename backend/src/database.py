@@ -286,6 +286,23 @@ class DatabaseService:
         except Exception as e:
             db.rollback()
             raise ValueError(f"Error fetching user's marketplace skins : {str(e)}") from e
+    def get_transactions_by_user(self, user_id: int, db: Session) -> List[Dict]:
+        try:
+            query = select(Transaction).where(Transaction.user_id == user_id).order_by(Transaction.date.desc())
+            result = db.execute(query).scalars().all()
+            transactions_data = []
+            for transaction in result:
+                transactions_data.append({
+                    "id": str(transaction.id),
+                    "user_id": str(transaction.user_id),
+                    "amount": str(transaction.amount),
+                    "type": str(transaction.type),
+                    "date": str(transaction.date)
+                })
+            return transactions_data
+        except Exception as e:
+            db.rollback()
+            raise ValueError(f"Error fetching transactions for user {user_id} : {str(e)}") from e
 Database = DatabaseService
 
 def get_db():

@@ -319,3 +319,23 @@ def get_my_marketplace_skins(
         return skins
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving skin types: {str(e)}") from e
+
+@app.get("/transactions/history", status_code=status.HTTP_200_OK, response_model=List[Dict[str, str]])
+def get_transaction_history(
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+    ) -> List[Dict[str, str]]:
+    try:
+        user_email = current_user["sub"]
+        user = db_service.get_user_by_email(user_email, db)
+
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        transactions = db_service.get_transactions_by_user(user.id, db)
+
+        return transactions
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving transaction history: {str(e)}") from e
