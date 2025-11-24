@@ -405,3 +405,14 @@ export async function addFunds({ amount }) {
     return data;
 
 }
+
+export async function transactionHistory() {
+    const response = await fetch(`${API_BASE_URL}/transactions/history`, {
+      method: "GET",
+      headers: authHeaders(),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.detail || "Error while fetching transaction history.");
+
+    return data;
+}

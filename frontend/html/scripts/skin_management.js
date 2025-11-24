@@ -1,6 +1,6 @@
-import { adminCreateSkin, adminEditSkin, getAllSkins, adminDeleteSkin } from "./api.js";
-import "./dropdown_style.js"
-import "./main.js"
+import { adminCreateSkin, adminEditSkin, getAllSkins, adminDeleteSkin, getToken, getUserByEmail } from "./api.js";
+import "./dropdown_style.js";
+import "./main.js";
 
 // DOM elements
 const container = document.getElementById("skin_display");
@@ -28,19 +28,6 @@ const fLink = document.getElementById("f-link");
 const fQuantityWrapper = fQuantity.parentElement;
 
 let skins = [];
-
-document.addEventListener("DOMContentLoaded", async () => {
-  try {
-    skins = await getAllSkins();
-    populateFilters();
-    applyFilters();
-  } catch (err) {
-    console.error("Error fetching skins:", err);
-    empty.style.display = "block";
-    empty.textContent = "Unable to load skins.";
-  }
-});
-
 
 function refreshCustomSelect(select) {
   const next = select.nextElementSibling;
@@ -124,6 +111,9 @@ function renderList(list) {
   container.innerHTML = "";
   if (!list.length) {
     empty.style.display = "block";
+    empty.textContent = skins.length === 0
+      ? "There are no skins in the system."
+      : "No skins match your filters.";
     return;
   }
   empty.style.display = "none";
@@ -169,6 +159,46 @@ function applyFilters() {
   renderList(groupSkins(out));
 }
 
+// =============================
+// INITIAL LOAD WITH LOGIN CHECK
+// =============================
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    const token = getToken();
+    if (!token) {
+      empty.style.display = "block";
+      empty.textContent = "You must be logged in to access this page.";
+      return;
+    }
+
+    let payload;
+    try {
+      payload = JSON.parse(atob(token.split(".")[1]));
+    } catch {
+      empty.style.display = "block";
+      empty.textContent = "Your session has expired. Please log in again.";
+      return;
+    }
+
+    await getUserByEmail(payload.sub);
+
+    skins = await getAllSkins();
+
+    if (skins.length === 0) {
+      empty.style.display = "block";
+      empty.textContent = "There are no skins in the system.";
+      return;
+    }
+
+    populateFilters();
+    applyFilters();
+  } catch (err) {
+    console.error(err);
+    empty.style.display = "block";
+    empty.textContent = "Failed to load skins.";
+  }
+})
+
 // Add drawer
 function openAdd() {
   drawerTitle.textContent = "Add Skin";
@@ -190,7 +220,15 @@ function openAdd() {
 function openEdit(idList) {
   const ids = JSON.parse(idList);
   const first = skins.find(s => s.id === ids[0]);
-  if (!first) return alert("Error: skins not found");
+  if (!first) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Skins not found.',
+      confirmButtonColor: '#3085d6'
+    });
+    return;
+  }
 
   drawerTitle.textContent = `Edit ${ids.length} skins`;
   form.dataset.editing = JSON.stringify(ids);
@@ -201,24 +239,46 @@ function openEdit(idList) {
   fFloat.value = normalizeFloat(first.float_value);
   fLink.value = first.link;
 
-  fQuantityWrapper.style.display = "none"; // hide quantity
-  fQuantity.removeAttribute("required");    // REMOVE required
+  fQuantityWrapper.style.display = "none";
+  fQuantity.removeAttribute("required");
   showDrawer();
 }
 
 // Delete skins
 async function doDelete(idList) {
   const ids = JSON.parse(idList);
-  if (!confirm(`Delete ${ids.length} skin(s)?`)) return;
+  const { isConfirmed } = await Swal.fire({
+    title: `Delete ${ids.length} skin(s)?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, delete',
+    cancelButtonText: 'Cancel',
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33'
+  });
+
+  if (!isConfirmed) return;
 
   try {
     for (const id of ids) await adminDeleteSkin(id);
     skins = await getAllSkins();
     populateFilters();
     applyFilters();
+    Swal.fire({
+      icon: 'success',
+      title: 'Deleted!',
+      text: `${ids.length} skin(s) deleted.`,
+      confirmButtonColor: '#3085d6'
+    });
+    hideDrawer();
   } catch (err) {
     console.error("Error deleting skins:", err);
-    alert("Error deleting skins: " + err.message);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Failed to delete skins: ' + err.message,
+      confirmButtonColor: '#3085d6'
+    });
   }
 }
 
@@ -249,22 +309,39 @@ form.addEventListener("submit", async (e) => {
     populateFilters();
     applyFilters();
     hideDrawer();
+    Swal.fire({
+      icon: 'success',
+      title: 'Success!',
+      text: 'Skin saved successfully!',
+      confirmButtonColor: '#3085d6'
+    });
   } catch (err) {
     console.error("Error saving skin:", err);
-    alert("Error saving skin: " + err.message);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Failed to save skin: ' + err.message,
+      confirmButtonColor: '#3085d6'
+    });
   }
 });
-
-// Drawer buttons
-btnAdd.addEventListener("click", openAdd);
-drawerClose.addEventListener("click", hideDrawer);
-btnCancel.addEventListener("click", hideDrawer);
 
 // Delete button
 btnDelete.addEventListener("click", async () => {
   const ids = JSON.parse(form.dataset.editing);
   if (!ids || !ids.length) return;
-  if (!confirm(`Delete ${ids.length} skin(s)?`)) return;
+
+  const { isConfirmed } = await Swal.fire({
+    title: `Delete ${ids.length} skin(s)?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, delete',
+    cancelButtonText: 'Cancel',
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33'
+  });
+
+  if (!isConfirmed) return;
 
   try {
     for (const id of ids) await adminDeleteSkin(id);
@@ -272,11 +349,28 @@ btnDelete.addEventListener("click", async () => {
     populateFilters();
     applyFilters();
     hideDrawer();
+    Swal.fire({
+      icon: 'success',
+      title: 'Deleted!',
+      text: `${ids.length} skin(s) deleted.`,
+      confirmButtonColor: '#3085d6'
+    });
   } catch (err) {
     console.error("Error deleting skins:", err);
-    alert("Error deleting skins: " + err.message);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Failed to delete skins: ' + err.message,
+      confirmButtonColor: '#3085d6'
+    });
   }
 });
+
+
+// Drawer buttons
+btnAdd.addEventListener("click", openAdd);
+drawerClose.addEventListener("click", hideDrawer);
+btnCancel.addEventListener("click", hideDrawer);
 
 // Edit/Delete on cards
 container.addEventListener("click", (e) => {
