@@ -150,7 +150,6 @@ function renderList(list) {
   mappedList.forEach((s, idx) => {
     const card = document.createElement("div");
     card.className = "skin-card";
-
     card.innerHTML = `
       <div><div class="skin-name">${s.name}</div></div>
       <div class="skin-thumb"><img src="${s.link}" alt="${s.name}"></div>
