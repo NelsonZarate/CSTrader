@@ -1,4 +1,4 @@
-import { getMySkins, getToken, getUserByEmail,marketplaceAddSkin } from "./api.js";
+import { getMySkins, getToken, getUserByEmail, marketplaceAddSkin, transactionHistory } from "./api.js";
 import "./dropdown_style.js";
 import "./main.js";
 
@@ -11,20 +11,50 @@ const sortSelect = document.getElementById("sort");
 const resetBtn = document.getElementById("reset");
 
 let skins = [];
+let viewingHistory = false;
+
+const floatOrder = {
+  "Factory New": 1,
+  "Minimal Wear": 2,
+  "Field-Tested": 3,
+  "Well-Worn": 4,
+  "Battle-Scarred": 5,
+};
+
+function normalizeFloat(f) {
+  const map = {
+    "factory new": "Factory New",
+    "minimal wear": "Minimal Wear",
+    "field-tested": "Field-Tested",
+    "filed tested": "Field-Tested",
+    "well-worn": "Well-Worn",
+    "battle-scarred": "Battle-Scarred",
+  };
+  return map[f.toLowerCase()] || f;
+}
+
+
+// RENDER INVENTORY LIST
 
 function renderList(list) {
+  container.classList.add("inventory-grid");
+  container.classList.remove("history-view");
+
   container.innerHTML = "";
   if (!list.length) {
     empty.style.display = "block";
+    empty.textContent = skins.length === 0
+      ? "You have no skins in your inventory."
+      : "No skins match your filters.";
     return;
   }
+
   empty.style.display = "none";
 
   list.forEach((s, idx) => {
     const card = document.createElement("div");
     card.className = "skin-card flip-card";
 
-    // flip inner container
     const inner = document.createElement("div");
     inner.className = "flip-inner";
 
@@ -60,128 +90,120 @@ function renderList(list) {
 
     setTimeout(() => card.classList.add("visible"), 70 * idx);
 
-    // Evento flip
-    const sellNowBtn = front.querySelector(".btn-buynow");
-    const cancelBtn = back.querySelector(".btn-cancel-back");
+    // Flip events
+    front.querySelector(".btn-buynow").addEventListener("click", () => card.classList.add("flipped"));
+    back.querySelector(".btn-cancel-back").addEventListener("click", () => card.classList.remove("flipped"));
 
-    sellNowBtn.addEventListener("click", () => card.classList.add("flipped"));
-    cancelBtn.addEventListener("click", () => card.classList.remove("flipped"));
 
-    // Evento do form de venda
     const form = back.querySelector(".sell-form");
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const valueInput = back.querySelector(".sell-value");
-      const price = parseFloat(valueInput.value);
+      const price = parseFloat(back.querySelector(".sell-value").value);
       if (isNaN(price) || price <= 0) {
-        alert("Please enter a valid price.");
+        Swal.fire({
+          icon: 'warning',
+          title: 'Invalid price',
+          text: 'Please enter a valid price.',
+          confirmButtonColor: '#3085d6'
+        });
         return;
       }
-      const confirmSell = confirm(`Confirm sale of ${s.name} for ${price}?`);
-      if (!confirmSell) return;
+
+      const { isConfirmed } = await Swal.fire({
+        title: `Confirm sale of ${s.name}?`,
+        text: `Price: €${price}`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, sell it!',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#115f0cff',
+        cancelButtonColor: 'rgba(121, 14, 81, 1)'
+      });
+
+      if (!isConfirmed) return;
 
       try {
         await marketplaceAddSkin({ id: s.id, value: price });
-        alert("Skin listed successfully!");
+        await Swal.fire({
+          icon: 'success',
+          title: 'Success!',
+          text: 'Skin listed successfully!',
+          confirmButtonColor: '#3085d6'
+        });
         location.reload();
       } catch (err) {
         console.error(err);
-        alert("Failed to list skin. See console for details.");
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to list skin.',
+          confirmButtonColor: '#3085d6'
+        });
       }
     });
+
   });
 }
 
-
+// =============================
+// DROPDOWNS & FILTERS
+// =============================
 function refreshCustomSelect(select) {
   const next = select.nextElementSibling;
-  if (next && next.classList.contains("custom-select")) {
-    next.remove();
-  }
-
+  if (next && next.classList.contains("custom-select")) next.remove();
   delete select.dataset.enhanced;
-
-  document.dispatchEvent(
-    new CustomEvent("force-enhance-select", { detail: select })
-  );
+  document.dispatchEvent(new CustomEvent("force-enhance-select", { detail: select }));
 }
-
-
-
 
 function populateDropdowns(skins) {
   const knifeTypes = [...new Set(skins.map(s => s.knifeType).filter(Boolean))].sort();
   const skinTypes = [...new Set(skins.map(s => s.skinType).filter(Boolean))].sort();
 
   filterType.innerHTML = `<option value="all">All knife types</option>`;
-  knifeTypes.forEach(type => {
-    const opt = document.createElement("option");
-    opt.value = type;
-    opt.textContent = type;
-    filterType.appendChild(opt);
-  });
+  knifeTypes.forEach(type => filterType.append(new Option(type, type)));
 
   filterSkin.innerHTML = `<option value="all">All finishes</option>`;
-  skinTypes.forEach(finish => {
-    const opt = document.createElement("option");
-    opt.value = finish;
-    opt.textContent = finish;
-    filterSkin.appendChild(opt);
-  });
-
+  skinTypes.forEach(type => filterSkin.append(new Option(type, type)));
 
   refreshCustomSelect(filterType);
   refreshCustomSelect(filterSkin);
 }
 
-
-
 function applyFilters() {
   let out = skins.slice();
   const q = searchInput.value.toLowerCase();
+
+  // SEARCH
   if (q)
     out = out.filter((s) =>
       (s.name + s.knifeType + s.skinType).toLowerCase().includes(q)
     );
 
+  // FILTER KNIFE TYPE
   if (filterType.value !== "all")
     out = out.filter((s) => s.knifeType === filterType.value);
+
+  // FILTER SKIN TYPE
   if (filterSkin.value !== "all")
     out = out.filter((s) => s.skinType === filterSkin.value);
 
-  const floatOrder = {
-    "Factory New": 1,
-    "Minimal Wear": 2,
-    "Field-Tested": 3,
-    "Well-Worn": 4,
-    "Battle-Scarred": 5,
-  };
-
-  function normalizeFloat(f) {
-    const map = {
-      "factory new": "Factory New",
-      "minimal wear": "Minimal Wear",
-      "field-tested": "Field-Tested",
-      "filed tested": "Field-Tested",
-      "well-worn": "Well-Worn",
-      "battle-scarred": "Battle-Scarred",
-    };
-    return map[f.toLowerCase()] || f;
-  }
-
+  // SORT
   switch (sortSelect.value) {
     case "name-asc":
       out.sort((a, b) => a.name.localeCompare(b.name));
       break;
+
     case "name-desc":
       out.sort((a, b) => b.name.localeCompare(a.name));
       break;
+
     case "float-asc":
       out.forEach((s) => (s.float = normalizeFloat(s.float)));
       out.sort(
         (a, b) => (floatOrder[a.float] || 99) - (floatOrder[b.float] || 99)
       );
       break;
+
     case "float-desc":
       out.forEach((s) => (s.float = normalizeFloat(s.float)));
       out.sort(
@@ -190,61 +212,127 @@ function applyFilters() {
       break;
   }
 
+  // RENDER
   renderList(out);
 }
 
-[searchInput, filterType, filterSkin, sortSelect].forEach((el) =>
-  el.addEventListener("input", applyFilters)
-);
 
+// =============================
+// INITIAL LOAD
+// =============================
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     const token = getToken();
-
     if (!token) {
       empty.style.display = "block";
       empty.textContent = "You must be logged in to view your inventory.";
-      container.innerHTML = "";
       return;
     }
 
     let payload;
     try {
       payload = JSON.parse(atob(token.split(".")[1]));
-    } catch (err) {
+    } catch {
       empty.style.display = "block";
-      empty.textContent = "Invalid session. Please log in again.";
-      container.innerHTML = "";
+      empty.textContent = "Your session has expired. Please log in again.";
       return;
     }
 
-    const email = payload.sub;
-    const user = await getUserByEmail(email);
-
-    if (!user || !user.email) {
-      empty.style.display = "block";
-      empty.textContent = "You must be logged in to view your inventory.";
-      container.innerHTML = "";
-      return;
-    }
+    await getUserByEmail(payload.sub);
 
     skins = await getMySkins();
-    populateDropdowns(skins);  // <- CUIDADO: esta é a nova linha
-    applyFilters();
 
+    if (skins.length === 0) {
+      empty.style.display = "block";
+      empty.textContent = "You have no skins in your inventory.";
+      return;
+    }
+
+    populateDropdowns(skins);
+    applyFilters();
   } catch (err) {
-    console.error("Authentication error:", err);
+    console.error(err);
     empty.style.display = "block";
-    empty.textContent = "Unable to load your skins.";
+    empty.textContent = "Failed to load your inventory.";
   }
 });
 
+
+// =============================
+//   TRANSACTION HISTORY
+// =============================
+const transactionBtn = document.getElementById("transaction_history");
+
+transactionBtn.addEventListener("click", async () => {
+  viewingHistory = !viewingHistory;
+
+  if (viewingHistory) {
+    const history = await transactionHistory();
+    renderTransactionTable(history);
+    transactionBtn.innerText = "View Inventory";
+  } else {
+    container.classList.add("inventory-grid");
+    renderList(skins);
+    transactionBtn.innerText = "Transaction History";
+  }
+});
+
+// =============================
+// RENDER TRANSACTION TABLE
+// =============================
+function renderTransactionTable(data) {
+  container.classList.remove("inventory-grid");
+  container.classList.add("history-view");
+
+  container.innerHTML = "";
+  empty.style.display = "none";
+
+  // 👉 Ordenar do ID MAIOR para o MENOR
+  data.sort((a, b) => b.id - a.id);
+
+  const table = document.createElement("table");
+  table.className = "transaction-table";
+
+  // 👉 Removido o campo ID do header e do body
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th>Amount (€)</th>
+        <th>Type</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${data
+      .map(
+        t => `
+        <tr>
+          <td>€${parseFloat(t.amount).toFixed(2)}</td>
+          <td>${t.type}</td>
+          <td>${new Date(t.date).toLocaleString()}</td>
+        </tr>`
+      )
+      .join("")}
+    </tbody>
+  `;
+
+  container.appendChild(table);
+}
+
+
+
+[searchInput, filterType, filterSkin, sortSelect].forEach((el) =>
+  el.addEventListener("input", applyFilters)
+);
+
+
+// =============================
+// RESET BUTTON
+// =============================
 resetBtn.addEventListener("click", () => {
   searchInput.value = "";
   filterType.value = "all";
   filterSkin.value = "all";
   sortSelect.value = "default";
-
   applyFilters();
 });
-

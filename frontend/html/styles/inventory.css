@@ -421,7 +421,7 @@ select::-webkit-scrollbar-thumb:hover {
     outline: none;
 }
 
-/* Botão SELL */
+
 .btn-sell {
     background: linear-gradient(135deg, var(--accent-color), var(--hover-accent-color));
     color: white;
@@ -440,7 +440,7 @@ select::-webkit-scrollbar-thumb:hover {
     box-shadow: 0 0 16px rgba(183,167,255,0.35);
 }
 
-/* botão cancelar */
+
 .btn-cancel-back {
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.07);
@@ -457,8 +457,68 @@ select::-webkit-scrollbar-thumb:hover {
     background: rgba(183,167,255,0.1);
 }
 
-/* sombra especial no flip */
+
 .flip-card.flipped {
     box-shadow: 0 0 25px rgba(183,167,255,0.2) !important;
     transform: translateY(-4px);
+}
+
+
+.transaction-table {
+  width: 100%;
+  border-collapse: separate;       
+  border-spacing: 0;             
+  margin-top: 24px;
+  background: rgba(255,255,255,0.03);
+  color: var(--primary-color);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  font-size: 0.95rem;
+}
+
+.transaction-table th {
+  background: rgba(255,255,255,0.07);
+  padding: 14px 18px;
+  text-align: center;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: var(--accent-color);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+
+.transaction-table td {
+  padding: 12px 18px;  
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  vertical-align: middle;
+  text-align: center;
+}
+
+
+.transaction-table tr:nth-child(even) td {
+  background: rgba(255,255,255,0.02);
+}
+
+
+.transaction-table tr:hover td {
+  background: rgba(183,167,255,0.08);
+  transition: background 0.25s ease;
+}
+
+
+.transaction-table tr:last-child td {
+  border-bottom: none;
+}
+
+
+.transaction-table td,
+.transaction-table th {
+  white-space: nowrap;
+}
+
+.history-view {
+    padding: 20px 8% 80px;
+    display: flex;
+    justify-content: center;
 }
