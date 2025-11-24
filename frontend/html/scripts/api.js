@@ -347,11 +347,12 @@ export async function adminDeleteSkin(skinId) {
 // -----------------------------
 export async function marketplaceAddSkin({ id, value }) {
   if (!id) throw new Error("Skin ID is required.");
-  if (value == null || value < 0) throw new Error("Value must be a positive number.");
+  if (value == null || value < 0)
+    throw new Error("Value must be a positive number.");
 
   const payload = {
     skin_id: id,
-    value: value
+    value: value,
   };
 
   console.log("Listing skin with payload:", payload);
@@ -363,7 +364,8 @@ export async function marketplaceAddSkin({ id, value }) {
   });
 
   const data = await response.json();
-  if (!response.ok) throw new Error(data.detail || "Erro ao adicionar skin ao marketplace.");
+  if (!response.ok)
+    throw new Error(data.detail || "Erro ao adicionar skin ao marketplace.");
 
   return data;
 }
