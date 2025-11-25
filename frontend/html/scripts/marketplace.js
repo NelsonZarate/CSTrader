@@ -22,6 +22,24 @@ const viewMySkinsBtn = document.getElementById("view_my_skins");
 let skins = [];
 let viewingMySkins = false;
 
+const floatOrder = {
+  "Factory New": 1,
+  "Minimal Wear": 2,
+  "Field-Tested": 3,
+  "Well-Worn": 4,
+  "Battle-Scarred": 5,
+};
+
+function normalizeFloat(f) {
+  const map = {
+    "factory new": "Factory New",
+    "minimal wear": "Minimal Wear",
+    "field-tested": "Field-Tested",
+    "well-worn": "Well-Worn",
+    "battle-scarred": "Battle-Scarred",
+  };
+  return map[f.toLowerCase()] || f;
+}
 function formatPrice(v) {
   return "€" + v.toFixed(2);
 }
@@ -116,7 +134,7 @@ function setupModalEvents() {
         icon: "error",
         confirmButtonText: "Add Funds",
       }).then((res) => {
-        if (res.isConfirmed) window.location.replace("../wallet/index.html");
+        if (res.isConfirmed) window.location.replace("../deposit_funds/index.html");
       });
     }
   });
@@ -238,6 +256,19 @@ function applyFilters() {
       break;
     case "price-desc":
       out.sort((a, b) => b.value - a.value);
+      break;
+    case "float-asc":
+      out.forEach((s) => (s.float = normalizeFloat(s.float)));
+      out.sort(
+        (a, b) => (floatOrder[a.float] || 99) - (floatOrder[b.float] || 99)
+      );
+      break;
+
+    case "float-desc":
+      out.forEach((s) => (s.float = normalizeFloat(s.float)));
+      out.sort(
+        (a, b) => (floatOrder[b.float] || 99) - (floatOrder[a.float] || 99)
+      );
       break;
   }
 
