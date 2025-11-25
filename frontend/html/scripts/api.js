@@ -421,6 +421,7 @@ export async function transactionHistory() {
   return data;
 }
 
+
 export async function getMyMarketplace() {
   const response = await fetch(`${API_BASE_URL}/marketplace/user/skins`, {
     method: "GET",
@@ -428,8 +429,26 @@ export async function getMyMarketplace() {
   });
 
   const data = await response.json();
-  if (!response.ok)
-    throw new Error(data.detail || "Erro ao obter todas as skins.");
+  if (!response.ok) throw new Error(data.detail || "Erro ao obter skins.");
 
-  return data;
+  const mapped = (data || []).map((s) => {
+    const knife = s.type || "";
+    const skin = s.name || "";
+
+    const displayName =
+      `${knife.charAt(0).toUpperCase() + knife.slice(1)} ` +
+      `${skin.charAt(0).toUpperCase() + skin.slice(1)}`;
+
+    return {
+      id: s.id,
+      name: displayName,
+      knifeType: knife,
+      skinType: skin,
+      float: s.float_value || "Unknown",
+      value: s.value ?? 0,
+      link: s.link || "/path/to/placeholder.png",
+    };
+  });
+
+  return mapped;
 }

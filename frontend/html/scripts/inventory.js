@@ -26,7 +26,6 @@ function normalizeFloat(f) {
     "factory new": "Factory New",
     "minimal wear": "Minimal Wear",
     "field-tested": "Field-Tested",
-    "filed tested": "Field-Tested",
     "well-worn": "Well-Worn",
     "battle-scarred": "Battle-Scarred",
   };
