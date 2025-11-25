@@ -17,6 +17,8 @@ migrations:
 
 create_admin:
 	docker compose up --build initialize_admin -d
+popular:
+	docker exec -it cstrader-api-1 poetry run python backend/src/seed.py
 
 test:
 	docker exec -it cstrader-api-1 poetry run pytest
@@ -28,4 +30,6 @@ setup:
 
 	docker compose up --build initialize_admin
 
+	docker exec -it cstrader-api-1 poetry run python backend/src/seed.py
+	
 	docker exec -it cstrader-api-1 poetry run pytest
