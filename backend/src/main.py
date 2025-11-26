@@ -66,23 +66,9 @@ def register_user(
         raise
     except Exception as e:
         raise HTTPException(status_code=500,detail=f"Error creating user: {str(e)}") from e
-
-
-@app.get("/get_users", status_code=status.HTTP_200_OK, response_model=Dict[str, Union[str, list]])
-def get_users(db: Session = Depends(get_db)) -> Dict[str, Union[str, list]]:
-    """
-    Obtém uma lista de todos os utilizadores registados.
-    (Nota: Requer implementação de segurança para restringir a admins em produção)
-    """
-    try:
-        users = db_service.get_all_users(db)
-        return {"message": "Utilizadores recuperados com sucesso", "users": users}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro ao recuperar utilizadores: {str(e)}") from e
-    
     
 @app.get("/get_user/{email}", status_code=status.HTTP_200_OK, response_model=Dict[str, Union[str, Dict]])
-def get_user_by_email(email: str, db: Session = Depends(get_db)) -> Dict[str, Union[str, Dict]]:
+def get_user_by_email(email: str,current_user: dict = Depends(get_current_user) ,db: Session = Depends(get_db)) -> Dict[str, Union[str, Dict]]:
     """
     Recupera os detalhes de um utilizador específico pelo seu email.
     """
@@ -166,7 +152,7 @@ def get_my_skins(current_user: dict = Depends(get_current_user), db: Session = D
     
     
 @app.get("/user/skins/{user_id}", status_code=status.HTTP_200_OK, response_model=Dict[str, Union[str, List]])
-def get_user_skins_by_id(user_id: int, db: Session = Depends(get_db)) -> Dict[str, Union[str, List]]:
+def get_user_skins_by_id(user_id: int, current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)) -> Dict[str, Union[str, List]]:
     """
     Recupera as skins de qualquer utilizador pelo seu ID.
     """

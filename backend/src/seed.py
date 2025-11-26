@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from backend.src.database import SessionLocal
 from backend.src.db_models import UserTable, SkinTable, Marketplace
 from backend.src.utils.validation_utils import hash_password
@@ -20,28 +21,39 @@ def seed():
 
     print(">> Creating USERS...")
     users = []
-    for i in range(2): 
-        user = UserTable(
-            name=f"user{i+1}",
-            email=f"user{i+1}@gmail.com",
-            password=hash_password("1234"),
-            role="player",
-            funds=1000
-        )
-        db.add(user)
-        db.commit()
-        db.refresh(user)
+    for i in range(2):
+        email = f"user{i+1}@gmail.com"
+        user = db.query(UserTable).filter_by(email=email).first()
+        if not user:
+            user = UserTable(
+                name=f"user{i+1}",
+                email=email,
+                password=hash_password("1234"),
+                role="player",
+                funds=1000
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
         users.append(user)
 
     print(">> Creating SKINS...")
     created_skins = []
-
     for user in users:
         chosen_types = random.sample(list(SKIN_TYPES.keys()), 5)
 
-        for _ in range(50):  
+        for _ in range(50):
             skin_type = random.choice(chosen_types)
             float_value = random.choice(FLOATS)
+
+            # Verificar se skin já existe para este usuário
+            skin_exists = db.query(SkinTable).filter_by(
+                name=skin_type.split()[1],
+                type=skin_type.split()[0],
+                owner_id=user.id
+            ).first()
+            if skin_exists:
+                continue
 
             skin = SkinTable(
                 name=skin_type.split()[1],
@@ -53,11 +65,12 @@ def seed():
             db.add(skin)
             db.commit()
             db.refresh(skin)
-
             created_skins.append(skin)
 
     print(">> Adding 20 skins to marketplace...")
-    picked = random.sample(created_skins, 20)
+    existing_marketplace_skin_ids = {m.skin_id for m in db.query(Marketplace).all()}
+    num_to_pick = min(20, len(created_skins))
+    picked = [sk for sk in random.sample(created_skins, num_to_pick) if sk.id not in existing_marketplace_skin_ids]
 
     for sk in picked:
         m = Marketplace(

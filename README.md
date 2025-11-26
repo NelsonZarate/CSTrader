@@ -72,18 +72,32 @@ A API estará acessível em:
 - Documentação Interativa (Swagger UI): [http://localhost:8000/docs](http://localhost:8000/docs])
 
 ## 📚 Estrutura do Projeto
-
+```plaintext
+my_project/
 ├── backend/
 │   ├── src/
 │   │   ├── database.py       # Serviço de persistência de dados (SQLAlchemy)
-│   │   ├── db_models.py      # Definições de tabelas da DB (ORM Models)
-│   │   ├── models.py         # Modelos Pydantic para Request/Response (Validação de dados)
-│   │   ├── main.py           # Definição de endpoints da API (FastAPI)
-│   │   └── settings.py       # Gestão de variáveis de ambiente
-│   ├── tests/                # Testes unitários (a implementar)
-├── .env.example              # Exemplo de ficheiro de configuração
+│   │   ├── db_models.py      # Definição de tabelas da DB (ORM Models)
+│   │   ├── models.py         # Modelos Pydantic para validação de dados (Request/Response)
+│   │   ├── main.py           # Endpoints da API (FastAPI)
+│   │   └── settings.py       # Variáveis de ambiente e configurações
+│   └── tests/                # Testes unitários e de integração
+├── .env.example              # Exemplo de ficheiro de configuração de variáveis de ambiente
 ├── docker-compose.yml        # Configuração dos serviços Docker (PostgreSQL)
-├── Makefile                  # Comandos de automação (setup, up, down)
-└── pyproject.toml            # Definição do projeto e dependências Poetry
+├── Makefile                  # Comandos de automação (setup, start, stop)
+└── pyproject.toml            # Configuração do projeto e dependências (Poetry)
+```
 
+## 📌 Descrição das Pastas e Ficheiros
 
+- **backend/src/**: Contém toda a lógica da aplicação, incluindo a base de dados, modelos e endpoints da API.
+- **database.py**: Configuração do SQLAlchemy e criação da sessão de base de dados.
+- **db_models.py**: Definição das tabelas e relacionamentos da base de dados.
+- **models.py**: Modelos Pydantic usados para validação de dados em requests e responses.
+- **main.py**: Definição dos endpoints da API usando FastAPI.
+- **settings.py**: Variáveis de ambiente e configurações gerais do projeto.
+- **tests/**: Pasta destinada a testes unitários e de integração.
+- **.env**: ficheiro de variáveis de ambiente.
+- **docker-compose.yml**: Configuração dos serviços Docker necessários para o projeto (ex.: PostgreSQL).
+- **Makefile**: Comandos de automação para facilitar setup e execução do projeto.
+- **pyproject.toml**: Ficheiro de configuração do Poetry, incluindo dependências e metadados do projeto.

@@ -69,8 +69,15 @@ export async function getUsers() {
 // GET USER BY EMAIL
 // -----------------------------
 export async function getUserByEmail(email) {
+  const token = getToken();
   const encoded = encodeURIComponent(email);
-  const response = await fetch(`${API_BASE_URL}/get_user/${encoded}`);
+
+  const response = await fetch(`${API_BASE_URL}/get_user/${encoded}`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
   const data = await response.json();
 
   if (!response.ok)
