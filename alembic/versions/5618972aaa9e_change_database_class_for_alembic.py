@@ -1,8 +1,8 @@
-"""empty message
+"""change database class for alembic
 
-Revision ID: dd8b8875347a
-Revises: 51d8f9be9095
-Create Date: 2025-11-08 22:20:11.918211
+Revision ID: 5618972aaa9e
+Revises: 6f30033a80f4
+Create Date: 2025-11-08 16:45:20.609345
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'dd8b8875347a'
-down_revision: Union[str, Sequence[str], None] = '51d8f9be9095'
+revision: str = '5618972aaa9e'
+down_revision: Union[str, Sequence[str], None] = '6f30033a80f4'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

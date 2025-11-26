@@ -1,7 +1,7 @@
 down: 
 	docker compose down -v --remove-orphans
 up: 
-	docker compose up --build --force-recreate --remove-orphans
+	docker compose up --build api frontend database adminer
 
 it:
 	docker compose run -it api bash
@@ -16,4 +16,20 @@ migrations:
 	docker exec -it cstrader-api-1 poetry run alembic -c backend/alembic.ini upgrade head
 
 create_admin:
+	docker compose up --build initialize_admin -d
+popular:
+	docker exec -it cstrader-api-1 poetry run python backend/src/seed.py
+
+test:
+	docker exec -it cstrader-api-1 poetry run pytest
+
+setup:
+	docker compose up --build -d database api frontend adminer
+
+	docker exec -it cstrader-api-1 poetry run alembic -c backend/alembic.ini upgrade head
+
 	docker compose up --build initialize_admin
+
+	docker exec -it cstrader-api-1 poetry run python backend/src/seed.py
+	
+	docker exec -it cstrader-api-1 poetry run pytest
