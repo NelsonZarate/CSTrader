@@ -224,7 +224,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const token = getToken();
     if (!token) {
       empty.style.display = "block";
-      empty.textContent = "You must be logged in to view your inventory.";
+      window.location.replace("../login/index.html#login");
       return;
     }
 

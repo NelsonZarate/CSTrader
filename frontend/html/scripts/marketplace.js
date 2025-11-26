@@ -160,11 +160,10 @@ function renderList(list) {
       <div><div class="skin-sub">${s.float}</div></div>
       <div class="skin-meta"><div class="price">€${s.value}</div></div>
       <div class="actions">
-        ${
-          viewingMySkins
-            ? `<button class="btn remove-btn" data-id="${s.id}">Remove</button>`
-            : `<button class="btn btn-buynow">Buy Now</button>`
-        }
+        ${viewingMySkins
+        ? `<button class="btn remove-btn" data-id="${s.id}">Remove</button>`
+        : `<button class="btn btn-buynow">Buy Now</button>`
+      }
       </div>
     `;
 
@@ -301,6 +300,13 @@ viewMySkinsBtn.addEventListener("click", async () => {
 });
 
 document.addEventListener("DOMContentLoaded", async () => {
+  const token = getToken();
+  if (!token) {
+    empty.style.display = "block";
+    window.location.replace("../login/index.html#login");
+    return;
+  }
+
   skins = await getMarketplace();
   populateDropdowns(skins);
   applyFilters();
