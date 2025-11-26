@@ -23,13 +23,7 @@ popular:
 test:
 	docker exec -it cstrader-api-1 poetry run pytest
 
-setup:
-	docker compose up --build -d database api frontend adminer
-
-	docker exec -it cstrader-api-1 poetry run alembic -c backend/alembic.ini upgrade head
-
-	docker compose up --build initialize_admin
-
-	docker exec -it cstrader-api-1 poetry run python backend/src/seed.py
+install:
+	poetry install
 	
-	docker exec -it cstrader-api-1 poetry run pytest
+setup: install up migrations create_admin popular test 
