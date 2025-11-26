@@ -1,7 +1,7 @@
 down: 
 	docker compose down -v --remove-orphans
 up: 
-	docker compose up --build api frontend database adminer
+	docker compose up --build api frontend database adminer -d
 
 it:
 	docker compose run -it api bash
